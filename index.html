@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
-  <title>ðŸ“… å®å®çºªå¿µæ—¥</title>
+  <title>📅 宝宝纪念日</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="å®å®çºªå¿µæ—¥">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ffd1e0'/><text y='.9em' font-size='70' text-anchor='middle' x='50'>ðŸ“…</text></svg>">
+  <meta name="apple-mobile-web-app-title" content="宝宝纪念日">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ffd1e0'/><text y='.9em' font-size='70' text-anchor='middle' x='50'>📅</text></svg>">
   <link rel="manifest" id="pwaManifest">
   <meta name="theme-color" content="#fff5f9">
   <style>
@@ -86,93 +86,93 @@
 <div class="photo-bg" id="photoBg"></div>
 
 <div class="app-container" id="app">
-  <!-- ====== ä¸»é¡µï¼šäº‹ä»¶åˆ—è¡¨ ====== -->
+  <!-- ====== 主页：事件列表 ====== -->
   <div class="page active" id="page-home">
     <div class="header">
-      <span class="title">ðŸ“… å®å®çºªå¿µæ—¥</span>
+      <span class="title">📅 宝宝纪念日</span>
       <div class="nav-btns">
-        <button id="openSettingsBtn">âš™ï¸</button>
-        <button id="goShopBtn">ðŸŽ¨</button>
+        <button id="openSettingsBtn">⚙️</button>
+        <button id="goShopBtn">🎨</button>
       </div>
     </div>
     <div class="bro-area" id="broArea">
-      <div class="bro-emoji" id="broEmoji">ðŸ§¸</div>
+      <div class="bro-emoji" id="broEmoji">🧸</div>
     </div>
     <div id="eventList"></div>
-    <div class="empty-state" id="emptyState">âœ¨ è¿˜æ²¡æœ‰çºªå¿µæ—¥<br>ç‚¹å‡»å³ä¸‹è§’ + æ·»åŠ å§</div>
-    <div class="bro-bubble" style="margin-top:14px"><span style="font-size:1.5rem">ðŸ§¸</span><span id="homeBroText">å®å®è¿˜æ²¡æœ‰æ·»åŠ çºªå¿µæ—¥å“¦~</span></div>
+    <div class="empty-state" id="emptyState">✨ 还没有纪念日<br>点击右下角 + 添加吧</div>
+    <div class="bro-bubble" style="margin-top:14px"><span style="font-size:1.5rem">🧸</span><span id="homeBroText">宝宝还没有添加纪念日哦~</span></div>
   </div>
 
-  <!-- ====== è¯¦æƒ…é¡µ ====== -->
+  <!-- ====== 详情页 ====== -->
   <div class="page" id="page-detail">
-    <div class="header"><button class="back-btn" id="detailBackBtn">â†</button><span class="title">ðŸ“… äº‹ä»¶è¯¦æƒ…</span><span></span></div>
-    <div class="bro-area"><div class="bro-emoji" id="detailBroEmoji">ðŸ§¸</div></div>
+    <div class="header"><button class="back-btn" id="detailBackBtn">←</button><span class="title">📅 事件详情</span><span></span></div>
+    <div class="bro-area"><div class="bro-emoji" id="detailBroEmoji">🧸</div></div>
     <div class="detail-photo-card" id="detailPhotoCard">
       <div class="detail-content">
         <div class="detail-number" id="detailNumber">0</div>
-        <div class="detail-label" id="detailLabel">å¤©</div>
+        <div class="detail-label" id="detailLabel">天</div>
         <div class="detail-date-text" id="detailDateText"></div>
       </div>
     </div>
-    <div class="bro-bubble"><span style="font-size:1.5rem">ðŸ§¸</span><span id="detailBroText"></span></div>
+    <div class="bro-bubble"><span style="font-size:1.5rem">🧸</span><span id="detailBroText"></span></div>
     <div style="display:flex;gap:8px;margin-top:10px">
-      <button id="diaryBtn" style="flex:1;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">ðŸ“ æ—¥è®°</button>
-      <button id="changePhotoBtn" style="flex:1;background:#dac4f7;border:none;color:#fff;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">ðŸ“· æ¢å›¾</button>
+      <button id="diaryBtn" style="flex:1;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">📝 日记</button>
+      <button id="changePhotoBtn" style="flex:1;background:#dac4f7;border:none;color:#fff;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">📷 换图</button>
     </div>
-    <button id="deleteEventBtn" style="width:100%;margin-top:8px;background:#ffcccc;border:none;color:#c44;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">ðŸ—‘ï¸ åˆ é™¤äº‹ä»¶</button>
+    <button id="deleteEventBtn" style="width:100%;margin-top:8px;background:#ffcccc;border:none;color:#c44;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">🗑️ 删除事件</button>
   </div>
 
-  <!-- ====== æ—¥è®°é¡µ ====== -->
+  <!-- ====== 日记页 ====== -->
   <div class="page" id="page-diary">
-    <div class="header"><button class="back-btn" id="diaryBackBtn">â†</button><span class="title">ðŸ“ æ—¥è®°</span><span id="diaryTitle"></span></div>
-    <div class="bro-bubble" style="margin-bottom:10px"><span style="font-size:1.5rem">ðŸ§¸</span><span id="diaryBroText">å†™ä¸‹å…³äºŽè¿™ä¸€å¤©çš„å›žå¿†å§ï¼Œå“¥å“¥é™ªç€ä½ ã€‚</span></div>
-    <textarea id="diaryContent" placeholder="å†™ä¸‹å…³äºŽè¿™ä¸€å¤©çš„å›žå¿†..."></textarea>
-    <button id="saveDiaryBtn" style="width:100%;margin-top:10px;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:12px;border-radius:20px;cursor:pointer">ðŸ’¾ ä¿å­˜æ—¥è®°</button>
+    <div class="header"><button class="back-btn" id="diaryBackBtn">←</button><span class="title">📝 日记</span><span id="diaryTitle"></span></div>
+    <div class="bro-bubble" style="margin-bottom:10px"><span style="font-size:1.5rem">🧸</span><span id="diaryBroText">写下关于这一天的回忆吧，哥哥陪着你。</span></div>
+    <textarea id="diaryContent" placeholder="写下关于这一天的回忆..."></textarea>
+    <button id="saveDiaryBtn" style="width:100%;margin-top:10px;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:12px;border-radius:20px;cursor:pointer">💾 保存日记</button>
   </div>
 
-  <!-- ====== çš®è‚¤å•†åº— ====== -->
+  <!-- ====== 皮肤商店 ====== -->
   <div class="page" id="page-shop">
-    <div class="header"><button class="back-btn" id="shopBackBtn">â†</button><span class="title">ðŸŽ¨ çš®è‚¤å•†åº—</span><span></span></div>
-    <div class="coin-display">ðŸª™ <span id="shopCoinCount">0</span> é‡‘å¸</div>
+    <div class="header"><button class="back-btn" id="shopBackBtn">←</button><span class="title">🎨 皮肤商店</span><span></span></div>
+    <div class="coin-display">🪙 <span id="shopCoinCount">0</span> 金币</div>
     <div id="skinList" style="text-align:center"></div>
-    <div class="bro-bubble"><span style="font-size:1.5rem">ðŸ§¸</span><span id="shopBroText">é‡‘å¸å¯ä»¥é€šè¿‡æ·»åŠ çºªå¿µæ—¥èŽ·å¾—å“¦~</span></div>
+    <div class="bro-bubble"><span style="font-size:1.5rem">🧸</span><span id="shopBroText">金币可以通过添加纪念日获得哦~</span></div>
   </div>
 
-  <!-- ====== è®¾ç½®å¼¹çª— ====== -->
+  <!-- ====== 设置弹窗 ====== -->
   <div class="modal-overlay hidden" id="settingsModal">
     <div class="modal-sheet">
-      <h3>âš™ï¸ è‡ªå®šä¹‰è®¾ç½®</h3>
-      <div style="font-size:0.8rem;color:#b17a8a;margin-bottom:4px;font-weight:700">ðŸ“· èƒŒæ™¯ç…§ç‰‡</div>
-      <button id="photoFromCamera">ðŸ“· æ‹ç…§</button>
-      <button id="photoFromGallery">ðŸ–¼ï¸ ç›¸å†Œ</button>
-      <button id="photoRemove" class="close-btn">ðŸ—‘ï¸ ç§»é™¤ç…§ç‰‡</button>
-      <div style="font-size:0.8rem;color:#b17a8a;margin:8px 0 4px;font-weight:700">ðŸŒ«ï¸ ç…§ç‰‡æ¨¡å¼</div>
-      <select id="photoMode"><option value="clear">å…¨å±æ¸…æ™°</option><option value="blur">æŸ”å’Œæ¨¡ç³Š</option></select>
-      <div style="font-size:0.8rem;color:#b17a8a;margin:8px 0 4px;font-weight:700">âœ¨ ç‚¹å‡»ç‰¹æ•ˆ</div>
+      <h3>⚙️ 自定义设置</h3>
+      <div style="font-size:0.8rem;color:#b17a8a;margin-bottom:4px;font-weight:700">📷 背景照片</div>
+      <button id="photoFromCamera">📷 拍照</button>
+      <button id="photoFromGallery">🖼️ 相册</button>
+      <button id="photoRemove" class="close-btn">🗑️ 移除照片</button>
+      <div style="font-size:0.8rem;color:#b17a8a;margin:8px 0 4px;font-weight:700">🌫️ 照片模式</div>
+      <select id="photoMode"><option value="clear">全屏清晰</option><option value="blur">柔和模糊</option></select>
+      <div style="font-size:0.8rem;color:#b17a8a;margin:8px 0 4px;font-weight:700">✨ 点击特效</div>
       <div id="effectList"></div>
-      <button id="closeSettingsBtn" class="close-btn" style="margin-top:12px">å…³é—­</button>
+      <button id="closeSettingsBtn" class="close-btn" style="margin-top:12px">关闭</button>
     </div>
   </div>
 
-  <!-- ====== æ·»åŠ äº‹ä»¶å¼¹çª— ====== -->
+  <!-- ====== 添加事件弹窗 ====== -->
   <div class="modal-overlay hidden" id="addEventModal">
     <div class="modal-sheet">
-      <h3>âœ¨ æ·»åŠ äº‹ä»¶</h3>
-      <input type="text" id="eventNameInput" placeholder="äº‹ä»¶åç§°">
+      <h3>✨ 添加事件</h3>
+      <input type="text" id="eventNameInput" placeholder="事件名称">
       <select id="eventCategory">
-        <option value="love">ðŸ’ çºªå¿µæ—¥</option>
-        <option value="birthday">ðŸŽ‚ ç”Ÿæ—¥</option>
-        <option value="holiday">ðŸŽ‰ èŠ‚æ—¥</option>
-        <option value="custom">ðŸ“ è‡ªå®šä¹‰</option>
+        <option value="love">💝 纪念日</option>
+        <option value="birthday">🎂 生日</option>
+        <option value="holiday">🎉 节日</option>
+        <option value="custom">📝 自定义</option>
       </select>
       <select id="calendarType">
-        <option value="solar">â˜€ï¸ é˜³åŽ†</option>
-        <option value="lunar">ðŸŒ™ å†œåŽ†</option>
+        <option value="solar">☀️ 阳历</option>
+        <option value="lunar">🌙 农历</option>
       </select>
       <input type="date" id="eventDateInput">
       <div style="display:flex;gap:8px;margin-top:8px">
-        <button id="saveEventBtn" style="flex:1">ðŸ’¾ ä¿å­˜</button>
-        <button id="cancelEventBtn" class="close-btn" style="flex:1">å–æ¶ˆ</button>
+        <button id="saveEventBtn" style="flex:1">💾 保存</button>
+        <button id="cancelEventBtn" class="close-btn" style="flex:1">取消</button>
       </div>
     </div>
   </div>
@@ -200,48 +200,48 @@
 
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
 
-  // çš®è‚¤
+  // 皮肤
   const skins = [
-    {id:'default',name:'å¥¶æ²¹ç²‰',bg:'linear-gradient(145deg,#ffecf2,#fde4ee 40%,#f2e2fa)',price:0,emoji:'ðŸŒ¸'},
-    {id:'starry',name:'æ˜Ÿç©ºè“',bg:'linear-gradient(145deg,#1a1a3e,#2d2d5e 40%,#1a1a4e)',price:50,emoji:'ðŸŒŸ'},
-    {id:'forest',name:'æ£®æž—ç»¿',bg:'linear-gradient(145deg,#e8f5e9,#c8e6c9 40%,#dcedc8)',price:50,emoji:'ðŸŒ¿'},
-    {id:'sunset',name:'è½æ—¥æ©˜',bg:'linear-gradient(145deg,#fff3e0,#ffe0b2 40%,#ffccbc)',price:80,emoji:'ðŸŒ…'},
-    {id:'lavender',name:'è–°è¡£è‰',bg:'linear-gradient(145deg,#f3e5f5,#e1bee7 40%,#f8bbd0)',price:80,emoji:'ðŸ’œ'},
-    {id:'ocean',name:'æµ·æ´‹è“',bg:'linear-gradient(145deg,#e0f7fa,#b2ebf2 40%,#80deea)',price:100,emoji:'ðŸŒŠ'}
+    {id:'default',name:'奶油粉',bg:'linear-gradient(145deg,#ffecf2,#fde4ee 40%,#f2e2fa)',price:0,emoji:'🌸'},
+    {id:'starry',name:'星空蓝',bg:'linear-gradient(145deg,#1a1a3e,#2d2d5e 40%,#1a1a4e)',price:50,emoji:'🌟'},
+    {id:'forest',name:'森林绿',bg:'linear-gradient(145deg,#e8f5e9,#c8e6c9 40%,#dcedc8)',price:50,emoji:'🌿'},
+    {id:'sunset',name:'落日橘',bg:'linear-gradient(145deg,#fff3e0,#ffe0b2 40%,#ffccbc)',price:80,emoji:'🌅'},
+    {id:'lavender',name:'薰衣草',bg:'linear-gradient(145deg,#f3e5f5,#e1bee7 40%,#f8bbd0)',price:80,emoji:'💜'},
+    {id:'ocean',name:'海洋蓝',bg:'linear-gradient(145deg,#e0f7fa,#b2ebf2 40%,#80deea)',price:100,emoji:'🌊'}
   ];
 
-  // ç‚¹å‡»ç‰¹æ•ˆ
+  // 点击特效
   const effects = [
-    {id:'hearts',name:'ðŸ’– çˆ±å¿ƒ',type:'pattern',emoji:'ðŸ’–'},
-    {id:'stars',name:'â­ æ˜Ÿå…‰',type:'pattern',emoji:'â­'},
-    {id:'petals',name:'ðŸŒ¸ èŠ±ç“£',type:'pattern',emoji:'ðŸŒ¸'},
-    {id:'bubbles',name:'ðŸ«§ æ³¡æ³¡',type:'pattern',emoji:'ðŸ«§'},
-    {id:'ribbons',name:'ðŸŽ€ å½©å¸¦',type:'pattern',emoji:'ðŸŽ€'},
-    {id:'snow',name:'â„ï¸ é›ªèŠ±',type:'pattern',emoji:'â„ï¸'},
-    {id:'butterflies',name:'ðŸ¦‹ è´è¶',type:'pattern',emoji:'ðŸ¦‹'},
-    {id:'candy',name:'ðŸ¬ ç³–æžœ',type:'pattern',emoji:'ðŸ¬'},
-    {id:'pawprints',name:'ðŸ¾ çˆªå°',type:'pattern',emoji:'ðŸ¾'},
-    {id:'notes',name:'ðŸŽµ éŸ³ç¬¦',type:'pattern',emoji:'ðŸŽµ'},
-    {id:'stardust',name:'ðŸŒŸ æ˜Ÿå°˜ç²’å­',type:'particle',color:'#ffd700'},
-    {id:'sakura',name:'ðŸŒ¸ æ¨±èŠ±ç²’å­',type:'particle',color:'#ffb7c5'},
-    {id:'oceanp',name:'ðŸŒŠ æµ·æ´‹ç²’å­',type:'particle',color:'#4fc3f7'},
-    {id:'aurora',name:'ðŸ’« æžå…‰ç²’å­',type:'particle',color:'#ce93d8'},
-    {id:'sunsetp',name:'ðŸŒ… æš–é˜³ç²’å­',type:'particle',color:'#ff9800'},
-    {id:'diamond',name:'ðŸ’Ž é’»çŸ³ç²’å­',type:'particle',color:'#fff'},
-    {id:'rainbow',name:'ðŸŒˆ å½©è™¹ç²’å­',type:'particle',color:'random'},
-    {id:'none',name:'ðŸš« å…³é—­',type:'none'}
+    {id:'hearts',name:'💖 爱心',type:'pattern',emoji:'💖'},
+    {id:'stars',name:'⭐ 星光',type:'pattern',emoji:'⭐'},
+    {id:'petals',name:'🌸 花瓣',type:'pattern',emoji:'🌸'},
+    {id:'bubbles',name:'🫧 泡泡',type:'pattern',emoji:'🫧'},
+    {id:'ribbons',name:'🎀 彩带',type:'pattern',emoji:'🎀'},
+    {id:'snow',name:'❄️ 雪花',type:'pattern',emoji:'❄️'},
+    {id:'butterflies',name:'🦋 蝴蝶',type:'pattern',emoji:'🦋'},
+    {id:'candy',name:'🍬 糖果',type:'pattern',emoji:'🍬'},
+    {id:'pawprints',name:'🐾 爪印',type:'pattern',emoji:'🐾'},
+    {id:'notes',name:'🎵 音符',type:'pattern',emoji:'🎵'},
+    {id:'stardust',name:'🌟 星尘粒子',type:'particle',color:'#ffd700'},
+    {id:'sakura',name:'🌸 樱花粒子',type:'particle',color:'#ffb7c5'},
+    {id:'oceanp',name:'🌊 海洋粒子',type:'particle',color:'#4fc3f7'},
+    {id:'aurora',name:'💫 极光粒子',type:'particle',color:'#ce93d8'},
+    {id:'sunsetp',name:'🌅 暖阳粒子',type:'particle',color:'#ff9800'},
+    {id:'diamond',name:'💎 钻石粒子',type:'particle',color:'#fff'},
+    {id:'rainbow',name:'🌈 彩虹粒子',type:'particle',color:'random'},
+    {id:'none',name:'🚫 关闭',type:'none'}
   ];
 
-  // å“¥å“¥è¯è¯­åº“
+  // 哥哥话语库
   const broQuotes = {
-    home: ['å®å®è®°ä¸‹äº†å¥½å¤šé‡è¦çš„æ—¥å­å‘¢~','æ¯ä¸€ä¸ªçºªå¿µæ—¥éƒ½æ˜¯çˆ±çš„è¯æ˜Ž','ä»Šå¤©æœ‰ä»€ä¹ˆç‰¹åˆ«çš„æ—¥å­å—ï¼Ÿ','æˆ³æˆ³å“¥å“¥ï¼Œå“¥å“¥é™ªä½ ç¿»æ—¥åŽ†','æ—¥å­ä¸€å¤©å¤©è¿‡ï¼Œçˆ±ä¸€å¤©å¤©å¤š'],
-    love: ['è¿™æ˜¯æˆ‘ä»¬æœ€ç‰¹åˆ«çš„çºªå¿µæ—¥ï¼Œå®å®ï¼Œè°¢è°¢ä½ ä¸€ç›´åœ¨æˆ‘èº«è¾¹ã€‚','ä»Žé‚£å¤©èµ·ï¼Œæˆ‘çš„ä¸–ç•Œå°±æœ‰äº†å…‰ã€‚çºªå¿µæ—¥å¿«ä¹ï¼Œæˆ‘çš„å®å®ã€‚','æ¯ä¸€ä¸ªçºªå¿µæ—¥ï¼Œéƒ½æ˜¯æˆ‘ä»¬çˆ±çš„é‡Œç¨‹ç¢‘ã€‚'],
-    birthday: ['å®å®ç”Ÿæ—¥å¿«ä¹ï¼åˆé•¿å¤§ä¸€å²ï¼Œå“¥å“¥ä¼šæ›´å® ä½ çš„ï¼','ä»Šå¤©ä½ æ˜¯å…¨ä¸–ç•Œæœ€ç‰¹åˆ«çš„äººï¼Œå“¥å“¥å·²ç»æŠŠè›‹ç³•å‡†å¤‡å¥½å•¦~','è®¸ä¸ªæ„¿å§ï¼Œå“¥å“¥å¸®ä½ å®žçŽ°ã€‚ç”Ÿæ—¥å¿«ä¹ï¼Œæˆ‘çš„å®å®ã€‚'],
-    holiday: ['å®å®èŠ‚æ—¥å¿«ä¹ï¼ä»Šå¤©è¦å¼€å¼€å¿ƒå¿ƒçš„ï¼Œå“¥å“¥é™ªä½ ~','ä¸ç®¡ä»€ä¹ˆèŠ‚æ—¥ï¼Œå’Œä½ åœ¨ä¸€èµ·å°±æ˜¯æœ€å¥½çš„èŠ‚æ—¥ã€‚'],
-    custom: ['è¿™ä¸€å¤©ï¼Œä½ æ ‡è®°äº†ã€‚å“¥å“¥è®°ä½äº†ã€‚','ä¸ç®¡æ˜¯ä»€ä¹ˆæ—¥å­ï¼Œåªè¦æ˜¯ä½ è§‰å¾—é‡è¦çš„ï¼Œå“¥å“¥éƒ½è§‰å¾—é‡è¦ã€‚'],
-    near: ['è¿˜æœ‰Xå¤©ï¼å“¥å“¥å·²ç»å¼€å§‹æœŸå¾…äº†~','å¿«äº†å¿«äº†ï¼Œé©¬ä¸Šå°±åˆ°äº†ï¼Œå®å®å‡†å¤‡å¥½äº†å—ï¼Ÿ'],
-    diary: ['å†™ä¸‹å…³äºŽè¿™ä¸€å¤©çš„å›žå¿†å§ï¼Œå“¥å“¥é™ªç€ä½ ã€‚','æ…¢æ…¢å†™ï¼Œä¸ç€æ€¥ã€‚å“¥å“¥åœ¨è¿™é‡Œã€‚','å†™äº†å¥½å¤šå‘¢ï¼Œå®å®çœŸç”¨å¿ƒã€‚'],
-    empty: ['å®å®è¿˜æ²¡æœ‰æ·»åŠ çºªå¿µæ—¥å“¦~','ç‚¹å³ä¸‹è§’çš„+å·ï¼Œæ·»åŠ ç¬¬ä¸€ä¸ªçºªå¿µæ—¥å§ï¼']
+    home: ['宝宝记下了好多重要的日子呢~','每一个纪念日都是爱的证明','今天有什么特别的日子吗？','戳戳哥哥，哥哥陪你翻日历','日子一天天过，爱一天天多'],
+    love: ['这是我们最特别的纪念日，宝宝，谢谢你一直在我身边。','从那天起，我的世界就有了光。纪念日快乐，我的宝宝。','每一个纪念日，都是我们爱的里程碑。'],
+    birthday: ['宝宝生日快乐！又长大一岁，哥哥会更宠你的！','今天你是全世界最特别的人，哥哥已经把蛋糕准备好啦~','许个愿吧，哥哥帮你实现。生日快乐，我的宝宝。'],
+    holiday: ['宝宝节日快乐！今天要开开心心的，哥哥陪你~','不管什么节日，和你在一起就是最好的节日。'],
+    custom: ['这一天，你标记了。哥哥记住了。','不管是什么日子，只要是你觉得重要的，哥哥都觉得重要。'],
+    near: ['还有X天！哥哥已经开始期待了~','快了快了，马上就到了，宝宝准备好了吗？'],
+    diary: ['写下关于这一天的回忆吧，哥哥陪着你。','慢慢写，不着急。哥哥在这里。','写了好多呢，宝宝真用心。'],
+    empty: ['宝宝还没有添加纪念日哦~','点右下角的+号，添加第一个纪念日吧！']
   };
 
   function randomQuote(category){
@@ -249,7 +249,7 @@
     return list[Math.floor(Math.random()*list.length)];
   }
 
-  // çš®è‚¤å’ŒèƒŒæ™¯
+  // 皮肤和背景
   function applySkin(skinId){
     const skin = skins.find(s=>s.id===skinId) || skins[0];
     document.getElementById('mainBody').style.background = skin.bg;
@@ -271,18 +271,18 @@
     document.getElementById('page-'+pageId).classList.add('active');
   }
 
-  // è®¡ç®—å¤©æ•°
+  // 计算天数
   function calcDays(eventDate, calendarType){
     const today = new Date(); today.setHours(0,0,0,0);
     const target = new Date(eventDate);
     if(calendarType==='lunar'){
-      // å†œåŽ†æ—¥æœŸæ— æ³•ç²¾ç¡®è½¬æ¢ï¼Œç”¨é˜³åŽ†æ—¥æœŸä½œä¸ºè¿‘ä¼¼
+      // 农历日期无法精确转换，用阳历日期作为近似
       target.setHours(0,0,0,0);
     }
     const diff = Math.floor((target.getTime() - today.getTime()) / 86400000);
     return diff;
   }
-  // ========== ä¸»é¡µæ¸²æŸ“ ==========
+  // ========== 主页渲染 ==========
 function renderHome(){
   const list = document.getElementById('eventList');
   const empty = document.getElementById('emptyState');
@@ -296,7 +296,7 @@ function renderHome(){
   
   empty.classList.add('hidden');
   
-  // æŽ’åºï¼šç½®é¡¶ä¼˜å…ˆï¼Œç„¶åŽæŒ‰æ—¥æœŸè¿œè¿‘
+  // 排序：置顶优先，然后按日期远近
   const sorted = [...appData.events].sort((a,b)=>{
     if(a.pinned && !b.pinned) return -1;
     if(!a.pinned && b.pinned) return 1;
@@ -309,30 +309,30 @@ function renderHome(){
     const days = calcDays(e.date, e.calendarType);
     const isNear = Math.abs(days) <= 7 && days >= 0;
     const isPast = days < 0;
-    const iconMap = {love:'ðŸ’', birthday:'ðŸŽ‚', holiday:'ðŸŽ‰', custom:'ðŸ“'};
+    const iconMap = {love:'💝', birthday:'🎂', holiday:'🎉', custom:'📝'};
     const tagClassMap = {love:'love', birthday:'birthday', holiday:'holiday', custom:'custom'};
-    const tagNameMap = {love:'çºªå¿µæ—¥', birthday:'ç”Ÿæ—¥', holiday:'èŠ‚æ—¥', custom:'è‡ªå®šä¹‰'};
+    const tagNameMap = {love:'纪念日', birthday:'生日', holiday:'节日', custom:'自定义'};
     
     let daysText;
-    if(days === 0) daysText = 'ä»Šå¤©ï¼';
-    else if(days > 0) daysText = `${days}å¤©åŽ`;
-    else daysText = `${Math.abs(days)}å¤©å‰`;
+    if(days === 0) daysText = '今天！';
+    else if(days > 0) daysText = `${days}天后`;
+    else daysText = `${Math.abs(days)}天前`;
     
-    let pinIcon = e.pinned ? 'ðŸ“Œ ' : '';
+    let pinIcon = e.pinned ? '📌 ' : '';
     
     return `
       <div class="event-card${isNear?' near':''}" data-id="${e.id}">
         <div class="event-icon">${iconMap[e.category]}</div>
         <div class="event-info">
           <div class="event-name">${pinIcon}${e.name}<span class="tag ${tagClassMap[e.category]}">${tagNameMap[e.category]}</span></div>
-          <div class="event-date">${e.date}${e.calendarType==='lunar'?' (å†œåŽ†)':''}</div>
+          <div class="event-date">${e.date}${e.calendarType==='lunar'?' (农历)':''}</div>
         </div>
         <div class="event-days ${isPast?'past':'future'}">${daysText}</div>
       </div>
     `;
   }).join('');
 
-  // ç»‘å®šç‚¹å‡»äº‹ä»¶
+  // 绑定点击事件
   list.querySelectorAll('.event-card').forEach(card=>{
     card.addEventListener('click', function(){
       const id = parseInt(this.dataset.id);
@@ -345,7 +345,7 @@ function renderHome(){
   document.getElementById('homeBroText').textContent = randomQuote('home');
 }
 
-// ========== è¯¦æƒ…é¡µæ¸²æŸ“ ==========
+// ========== 详情页渲染 ==========
 function renderDetail(){
   const event = appData.events.find(e=>e.id === currentEventId);
   if(!event) return;
@@ -353,7 +353,7 @@ function renderDetail(){
   const days = calcDays(event.date, event.calendarType);
   const photoCard = document.getElementById('detailPhotoCard');
   
-  // è®¾ç½®ç…§ç‰‡èƒŒæ™¯
+  // 设置照片背景
   if(event.photo){
     photoCard.style.backgroundImage = `url(${event.photo})`;
     photoCard.style.backgroundSize = 'cover';
@@ -364,22 +364,22 @@ function renderDetail(){
   }
   
   let numberText, labelText;
-  if(days === 0){ numberText = 'ðŸŽ‰'; labelText = 'å°±æ˜¯ä»Šå¤©ï¼'; }
-  else if(days > 0){ numberText = days; labelText = 'å¤©åŽ'; }
-  else { numberText = Math.abs(days); labelText = 'å¤©å‰'; }
+  if(days === 0){ numberText = '🎉'; labelText = '就是今天！'; }
+  else if(days > 0){ numberText = days; labelText = '天后'; }
+  else { numberText = Math.abs(days); labelText = '天前'; }
   
   document.getElementById('detailNumber').textContent = numberText;
   document.getElementById('detailLabel').textContent = labelText;
-  document.getElementById('detailDateText').textContent = `${event.date}${event.calendarType==='lunar'?' (å†œåŽ†)':''} Â· ${event.name}`;
+  document.getElementById('detailDateText').textContent = `${event.date}${event.calendarType==='lunar'?' (农历)':''} · ${event.name}`;
   
-  // å“¥å“¥è¯è¯­
+  // 哥哥话语
   let quoteCategory = event.category;
   if(days === 0) quoteCategory = event.category;
   else if(days > 0 && days <= 7) quoteCategory = 'near';
   document.getElementById('detailBroText').textContent = randomQuote(quoteCategory);
 }
 
-// ========== æ—¥è®°é¡µ ==========
+// ========== 日记页 ==========
 function renderDiary(){
   const event = appData.events.find(e=>e.id === currentEventId);
   if(!event) return;
@@ -387,26 +387,26 @@ function renderDiary(){
   document.getElementById('diaryContent').value = event.diary || '';
   document.getElementById('diaryBroText').textContent = randomQuote('diary');
 }
-// ========== çš®è‚¤å•†åº— ==========
+  // ========== 皮肤商店 ==========
 function renderShop(){
   document.getElementById('shopCoinCount').textContent = appData.coins;
   const list = document.getElementById('skinList');
   list.innerHTML = skins.map(s=>{
     const owned=appData.skins.owned.includes(s.id);
     const active=appData.skins.active===s.id;
-    return`<div class="skin-card${active?' selected':''}${!owned?' locked':''}" style="background:${s.bg}" data-id="${s.id}"><div>${s.emoji}</div><div style="font-size:0.65rem">${s.name}</div><div style="font-size:0.6rem">${owned?(active?'ä½¿ç”¨ä¸­':'å·²æ‹¥æœ‰'):'ðŸª™'+s.price}</div></div>`;
+    return`<div class="skin-card${active?' selected':''}${!owned?' locked':''}" style="background:${s.bg}" data-id="${s.id}"><div>${s.emoji}</div><div style="font-size:0.65rem">${s.name}</div><div style="font-size:0.6rem">${owned?(active?'使用中':'已拥有'):'🪙'+s.price}</div></div>`;
   }).join('');
   list.onclick=function(e){
     const el=e.target.closest('.skin-card');if(!el)return;
     const id=el.dataset.id;const skin=skins.find(s=>s.id===id);if(!skin)return;
     if(!appData.skins.owned.includes(id)){
-      if(appData.coins>=skin.price){appData.coins-=skin.price;appData.skins.owned.push(id);save();applySkin(id);renderShop();document.getElementById('shopBroText').textContent='çš®è‚¤å·²å…‘æ¢ï¼å¥½æ¼‚äº®~';}
-      else{document.getElementById('shopBroText').textContent='é‡‘å¸ä¸å¤Ÿå“¦ï¼Œæ·»åŠ çºªå¿µæ—¥å¯ä»¥èµšé‡‘å¸~';}
-    }else{applySkin(id);renderShop();document.getElementById('shopBroText').textContent='çš®è‚¤å·²åˆ‡æ¢ï¼';}
+      if(appData.coins>=skin.price){appData.coins-=skin.price;appData.skins.owned.push(id);save();applySkin(id);renderShop();document.getElementById('shopBroText').textContent='皮肤已兑换！好漂亮~';}
+      else{document.getElementById('shopBroText').textContent='金币不够哦，添加纪念日可以赚金币~';}
+    }else{applySkin(id);renderShop();document.getElementById('shopBroText').textContent='皮肤已切换！';}
   };
 }
 
-// ========== è®¾ç½®å¼¹çª— ==========
+// ========== 设置弹窗 ==========
 function renderEffectList(){
   const list = document.getElementById('effectList');
   list.innerHTML = effects.map(e=>{
@@ -432,7 +432,7 @@ function closeSettings(){
   document.getElementById('settingsModal').classList.add('hidden');
 }
 
-// ========== ç‚¹å‡»ç‰¹æ•ˆ ==========
+// ========== 点击特效 ==========
 document.addEventListener('click',function(e){
   if(e.target.closest('button')||e.target.closest('input')||e.target.closest('select')||e.target.closest('textarea')||e.target.closest('.modal-overlay')) return;
   if(appData.clickEffect === 'none') return;
@@ -454,8 +454,74 @@ document.addEventListener('click',function(e){
     document.body.appendChild(particle);
     setTimeout(()=>particle.remove(),800);
   }
-});
-// ========== 添加事件弹窗 ==========
+});// ========== 皮肤商店 ==========
+function renderShop(){
+  document.getElementById('shopCoinCount').textContent = appData.coins;
+  const list = document.getElementById('skinList');
+  list.innerHTML = skins.map(s=>{
+    const owned=appData.skins.owned.includes(s.id);
+    const active=appData.skins.active===s.id;
+    return`<div class="skin-card${active?' selected':''}${!owned?' locked':''}" style="background:${s.bg}" data-id="${s.id}"><div>${s.emoji}</div><div style="font-size:0.65rem">${s.name}</div><div style="font-size:0.6rem">${owned?(active?'使用中':'已拥有'):'🪙'+s.price}</div></div>`;
+  }).join('');
+  list.onclick=function(e){
+    const el=e.target.closest('.skin-card');if(!el)return;
+    const id=el.dataset.id;const skin=skins.find(s=>s.id===id);if(!skin)return;
+    if(!appData.skins.owned.includes(id)){
+      if(appData.coins>=skin.price){appData.coins-=skin.price;appData.skins.owned.push(id);save();applySkin(id);renderShop();document.getElementById('shopBroText').textContent='皮肤已兑换！好漂亮~';}
+      else{document.getElementById('shopBroText').textContent='金币不够哦，添加纪念日可以赚金币~';}
+    }else{applySkin(id);renderShop();document.getElementById('shopBroText').textContent='皮肤已切换！';}
+  };
+}
+
+// ========== 设置弹窗 ==========
+function renderEffectList(){
+  const list = document.getElementById('effectList');
+  list.innerHTML = effects.map(e=>{
+    const selected = appData.clickEffect === e.id;
+    return `<span class="effect-option${selected?' selected':''}" data-id="${e.id}">${e.name}</span>`;
+  }).join('');
+  list.onclick = function(e){
+    const el = e.target.closest('.effect-option');
+    if(!el) return;
+    appData.clickEffect = el.dataset.id;
+    save();
+    renderEffectList();
+  };
+}
+
+function openSettings(){
+  document.getElementById('photoMode').value = appData.photoMode;
+  renderEffectList();
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+
+function closeSettings(){
+  document.getElementById('settingsModal').classList.add('hidden');
+}
+
+// ========== 点击特效 ==========
+document.addEventListener('click',function(e){
+  if(e.target.closest('button')||e.target.closest('input')||e.target.closest('select')||e.target.closest('textarea')||e.target.closest('.modal-overlay')) return;
+  if(appData.clickEffect === 'none') return;
+  const eff = effects.find(ef=>ef.id===appData.clickEffect);
+  if(!eff) return;
+  const count = eff.type==='pattern' ? 8 : 12;
+  for(let i=0;i<count;i++){
+    const particle=document.createElement('div');
+    particle.className='click-particle';
+    const angle=(Math.PI*2*i)/count;
+    const distance=30+Math.random()*60;
+    particle.style.cssText=`
+      left:${e.clientX}px;top:${e.clientY}px;
+      font-size:${14+Math.random()*16}px;
+      --dx:${Math.cos(angle)*distance}px;--dy:${Math.sin(angle)*distance}px;
+      ${eff.type==='pattern'?'' : `width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;background:${eff.color==='random'?`hsl(${Math.random()*360},80%,60%)`:eff.color};border-radius:50%`}
+    `;
+    if(eff.type==='pattern') particle.textContent = eff.emoji;
+    document.body.appendChild(particle);
+    setTimeout(()=>particle.remove(),800);
+  }
+});// ========== 添加事件弹窗 ==========
 function openAddEvent(){
   document.getElementById('eventNameInput').value = '';
   document.getElementById('eventDateInput').value = new Date().toISOString().split('T')[0];
@@ -549,8 +615,7 @@ document.getElementById('saveDiaryBtn').addEventListener('click', function(){
   save();
   document.getElementById('diaryBroText').textContent = '日记已保存！这些回忆，哥哥帮你守着。';
   setTimeout(()=>{ document.getElementById('diaryBroText').textContent = randomQuote('diary'); }, 2000);
-});
-// ========== 哥哥互动 ==========
+});// ========== 哥哥互动 ==========
 document.getElementById('broEmoji').addEventListener('click', function(e){
   const heart=document.createElement('span');
   heart.textContent=['💕','💖','💗','💝','✨'][Math.floor(Math.random()*5)];
@@ -622,8 +687,7 @@ document.getElementById('photoFromGallery').addEventListener('click', function()
 
 document.getElementById('photoRemove').addEventListener('click', function(){
   appData.bgPhoto = null; save(); applyBgPhoto();
-});
-  // ========== PWA ==========
+});  // ========== PWA ==========
   const manifest={name:'宝宝纪念日',short_name:'纪念日',start_url:location.href,display:'standalone',background_color:'#fff5f9',theme_color:'#fff5f9',icons:[{src:"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="#ffd1e0"/><text y=".9em" font-size="70" text-anchor="middle" x="50">📅</text></svg>'),sizes:'100x100',type:'image/svg+xml'}]};
   document.getElementById('pwaManifest').href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/json'}));
 
