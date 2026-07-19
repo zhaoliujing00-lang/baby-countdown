@@ -645,24 +645,38 @@
     document.getElementById('eventEndDateInput').value='';document.getElementById('addEventModal').classList.remove('hidden');
   });
   document.getElementById('cancelEventBtn').addEventListener('click',()=>document.getElementById('addEventModal').classList.add('hidden'));
-  document.getElementById('saveEventBtn').addEventListener('click',async function(){
-    const name=document.getElementById('eventNameInput').value.trim();
-    const date=document.getElementById('eventDateInput').value;
-    const category=document.getElementById('eventCategory').value;
-    const calendarType=document.getElementById('calendarType').value;
-    const endDate=document.getElementById('eventEndDateInput').value;
-    if(!name||!date){alert('请填写名称和日期');return;}
-    let lunarDate = null, endLunarDate = null;
-    if (calendarType === 'lunar') {
-      lunarDate = await getLunarDate(date);
-      if (endDate) endLunarDate = await getLunarDate(endDate);
-    } else {
-      lunarDate = await getLunarDate(date);
-      if (endDate) endLunarDate = await getLunarDate(endDate);
-    }
-    appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,lunarDate:lunarDate,endLunarDate:endLunarDate,photo:null,diary:'',pinned:false,titleColor:'#fff'});
-    save();document.getElementById('addEventModal').classList.add('hidden');renderHome();updateBroEmoji();
+  document.getElementById('saveEventBtn').addEventListener('click', async function(e) {
+  e.stopPropagation();
+  const name = document.getElementById('eventNameInput').value.trim();
+  const date = document.getElementById('eventDateInput').value;
+  const category = document.getElementById('eventCategory').value;
+  const calendarType = document.getElementById('calendarType').value;
+  const endDate = document.getElementById('eventEndDateInput').value;
+  if (!name || !date) { alert('请填写名称和日期'); return; }
+  
+  let lunarDate = null, endLunarDate = null;
+  if (calendarType === 'lunar') {
+    lunarDate = await getLunarDate(date);
+    if (endDate) endLunarDate = await getLunarDate(endDate);
+  } else {
+    lunarDate = await getLunarDate(date);
+    if (endDate) endLunarDate = await getLunarDate(endDate);
+  }
+  
+  appData.events.push({
+    id: Date.now(), name, date, category, calendarType,
+    endDate: endDate || null,
+    lunarDate: lunarDate,
+    endLunarDate: endLunarDate,
+    photo: null, diary: '', pinned: false, titleColor: '#fff'
   });
+  save();
+  
+  // 强制关闭弹窗
+  document.getElementById('addEventModal').classList.add('hidden');
+  renderHome();
+  updateBroEmoji();
+});
 
   document.getElementById('photoFromCamera').addEventListener('click',function(){
     document.getElementById('bgPhotoInput').onchange=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){appData.bgPhoto=e.target.result;save();applyBgPhoto();};r.readAsDataURL(f);};document.getElementById('bgPhotoInput').click();
