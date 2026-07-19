@@ -17,7 +17,7 @@
     .photo-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;background-size:cover;background-position:center;background-repeat:no-repeat;display:none}
     .photo-bg.active{display:block}
     .photo-bg.blur{filter:blur(8px)}
-    .app-container{width:100%;max-width:480px;background:rgba(255,248,250,0.75);backdrop-filter:blur(18px);border-radius:38px;box-shadow:0 20px 45px rgba(180,130,150,0.3),inset 0 1px 10px rgba(255,255,255,0.7);padding:18px 16px;border:2px solid rgba(255,220,230,0.6);position:relative;z-index:1;min-height:calc(100vh - 32px);display:flex;flex-direction:column}
+    .app-container{width:100%;max-width:480px;background:rgba(255,248,250,0.75);backdrop-filter:blur(6px);border-radius:38px;box-shadow:0 20px 45px rgba(180,130,150,0.3),inset 0 1px 10px rgba(255,255,255,0.4);padding:18px 16px;border:2px solid rgba(255,220,230,0.6);position:relative;z-index:1;min-height:calc(100vh - 32px);display:flex;flex-direction:column}
     .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0}
     .title{font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#d47b8c,#b578a6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     .nav-btns button{background:#fff;border:none;padding:8px 14px;border-radius:30px;font-weight:600;color:#b17a8a;margin-left:6px;cursor:pointer;font-size:0.85rem;box-shadow:0 2px 8px rgba(180,150,160,0.1)}
@@ -133,9 +133,9 @@
       <button id="pinEventBtn" style="flex:1;background:#fff;border:1.5px solid #f0c8d8;font-weight:700;padding:8px;border-radius:20px;cursor:pointer;font-size:0.8rem">📌 置顶</button>
       <button id="deleteEventBtn" style="flex:1;background:#ffcccc;border:none;color:#c44;font-weight:700;padding:8px;border-radius:20px;cursor:pointer;font-size:0.8rem">🗑️ 删除</button>
     </div>
-    <div style="margin-top:8px;text-align:center">
-      <span style="font-size:0.75rem;color:#b17a8a;margin-right:4px">文字颜色：</span>
-      <span class="color-dot" data-color="#fff" style="background:#fff;border:2px solid #ddd"></span>
+<div style="margin-top:8px;text-align:center;padding-bottom:70px">
+  <span style="font-size:0.75rem;color:#b17a8a;margin-right:4px">文字颜色：</span>
+    <span class="color-dot" data-color="#fff" style="background:#fff;border:2px solid #ddd"></span>
       <span class="color-dot" data-color="#ffb3ba" style="background:#ffb3ba"></span>
       <span class="color-dot" data-color="#ffffba" style="background:#ffffba"></span>
       <span class="color-dot" data-color="#bae1ff" style="background:#bae1ff"></span>
@@ -497,30 +497,17 @@
 
   // ========== 小熊 ==========
   function updateBroEmoji(){
-    const bro = document.getElementById('broEmoji');
-    const todayEvents = appData.events.filter(e=>calcDays(e.date)===0);
-    if(todayEvents.length>0){
-      const cats = todayEvents.map(e=>e.category);
-      if(cats.includes('birthday')) bro.textContent = '🎂';
-      else if(cats.includes('love')) bro.textContent = '💖';
-      else bro.textContent = '🎉';
-    } else { bro.textContent = '🧸'; }
-  }
-
-  // ========== 事件绑定 ==========
-  document.getElementById('broEmoji').addEventListener('click',function(e){
-    const heart=document.createElement('span');heart.textContent='💖';heart.className='heart-particle';
-    const rect=this.getBoundingClientRect();heart.style.left=(rect.left+rect.width/2-12)+'px';heart.style.top=(rect.top-10)+'px';
-    document.body.appendChild(heart);setTimeout(()=>heart.remove(),1500);
-    document.getElementById('homeBroText').textContent = getTimeGreeting();
-  });
-  document.getElementById('detailBroEmoji').addEventListener('click',function(e){
-    const heart=document.createElement('span');heart.textContent='💖';heart.className='heart-particle';
-    const rect=this.getBoundingClientRect();heart.style.left=(rect.left+rect.width/2-12)+'px';heart.style.top=(rect.top-10)+'px';
-    document.body.appendChild(heart);setTimeout(()=>heart.remove(),1500);
-    const ev=appData.events.find(e=>e.id===currentEventId);
-    document.getElementById('detailBroText').textContent = randomQuote(ev?ev.category:'love');
-  });
+    const bro = document.getElementById('broEmoji').addEventListener('click',function(e){
+  const heart=document.createElement('span');heart.textContent='💖';heart.className='heart-particle';
+  const rect=this.getBoundingClientRect();heart.style.left=(rect.left+rect.width/2-12)+'px';heart.style.top=(rect.top-10)+'px';
+  document.body.appendChild(heart);setTimeout(()=>heart.remove(),1500);
+  // 随机组合：时间问候 + 随机夸奖
+  const quotes = [getTimeGreeting(), randomQuote('home'), randomQuote('life'), 
+    '宝宝今天真可爱~','哥哥好想你呀','戳戳哥哥会让哥哥开心一整天',
+    '今天有什么想和哥哥分享的吗？','不管什么时候，哥哥都在这里',
+    '你是哥哥最珍贵的宝贝','每一天都要开开心心的哦'];
+  document.getElementById('homeBroText').textContent = quotes[Math.floor(Math.random()*quotes.length)];
+});
 
   // 页面切换
   document.getElementById('goSettingsBtn').addEventListener('click',()=>{switchPage('settings');initSettingsPage();});
