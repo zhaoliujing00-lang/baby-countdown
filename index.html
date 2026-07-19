@@ -95,13 +95,9 @@
 </head>
 <body id="mainBody">
 <div class="photo-bg" id="photoBg"></div>
-
 <div class="app-container" id="app">
   <div class="page active" id="page-home">
-    <div class="header">
-      <span class="title">📅 宝宝纪念日</span>
-      <div class="nav-btns"><button id="goSettingsBtn">⚙️</button></div>
-    </div>
+    <div class="header"><span class="title">📅 宝宝纪念日</span><div class="nav-btns"><button id="goSettingsBtn">⚙️</button></div></div>
     <div class="bro-area"><div class="bro-emoji" id="broEmoji">🧸</div></div>
     <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索事件...">
     <div class="category-filter" id="categoryFilter">
@@ -117,7 +113,6 @@
     <div class="empty-state hidden" id="emptyState">✨ 还没有纪念日<br>点击右下角 + 添加吧</div>
     <div class="bro-bubble" style="margin-top:auto"><span style="font-size:1.5rem">🧸</span><span id="homeBroText">宝宝还没有添加纪念日哦~</span></div>
   </div>
-
   <div class="page" id="page-detail">
     <div class="header"><button class="back-btn" id="detailBackBtn">←</button><span class="title">📅 事件详情</span><span></span></div>
     <div class="bro-area"><div class="bro-emoji" id="detailBroEmoji">🧸</div></div>
@@ -126,6 +121,7 @@
         <div class="detail-number" id="detailNumber">0</div>
         <div class="detail-label" id="detailLabel">天</div>
         <div class="detail-date-text" id="detailDateText"></div>
+        <div class="detail-date-text" id="detailDateTextAlt" style="font-size:0.8rem;margin-top:2px;opacity:0.7"></div>
       </div>
     </div>
     <div class="bro-bubble"><span style="font-size:1.5rem">🧸</span><span id="detailBroText"></span></div>
@@ -150,14 +146,12 @@
       <span class="color-dot" data-color="#ffd4ba" style="background:#ffd4ba"></span>
     </div>
   </div>
-
   <div class="page" id="page-diary">
     <div class="header"><button class="back-btn" id="diaryBackBtn">←</button><span class="title">📝 日记</span><span></span></div>
     <div class="bro-bubble" style="margin-bottom:10px"><span style="font-size:1.5rem">🧸</span><span id="diaryBroText">写下关于这一天的回忆吧，哥哥陪着你。</span></div>
     <textarea id="diaryContent" placeholder="写下关于这一天的回忆..."></textarea>
     <button id="saveDiaryBtn" style="width:100%;margin-top:10px;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:12px;border-radius:20px;cursor:pointer">💾 保存日记</button>
   </div>
-
   <div class="page" id="page-settings">
     <div class="header"><button class="back-btn" id="settingsBackBtn">←</button><span class="title">⚙️ 设置</span><span></span></div>
     <div class="card">
@@ -183,7 +177,6 @@
       <button id="importDataBtn" class="backup-btn" style="margin-top:4px">📤 导入数据</button>
     </div>
   </div>
-
   <div class="modal-overlay hidden" id="addEventModal">
     <div class="modal-sheet">
       <h3>✨ 添加事件</h3>
@@ -205,7 +198,6 @@
       </div>
     </div>
   </div>
-
   <div class="modal-overlay hidden" id="milestoneModal">
     <div class="modal-sheet">
       <h3>🚩 里程碑</h3>
@@ -213,7 +205,6 @@
       <button id="closeMilestoneBtn" class="close-btn" style="margin-top:12px">关闭</button>
     </div>
   </div>
-
   <div class="modal-overlay hidden" id="cardModal">
     <div class="modal-sheet">
       <h3>💾 保存卡片</h3>
@@ -229,13 +220,11 @@
     </div>
   </div>
 </div>
-
 <input type="file" id="bgPhotoInput" accept="image/*" style="display:none">
 <input type="file" id="bgGalleryInput" accept="image/*" style="display:none">
 <input type="file" id="eventPhotoInput" accept="image/*" style="display:none">
 <input type="file" id="eventGalleryInput" accept="image/*" style="display:none">
 <input type="file" id="importFileInput" accept=".json" style="display:none">
-
 <button class="add-btn-fixed" id="addEventFAB">+</button>
 
 <script>
@@ -253,99 +242,62 @@
 
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
 
-  // ========== 点击特效（新增白色粒子、萤火虫、水波纹、碎钻） ==========
+  const LUNAR_MONTHS = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];
+  const LUNAR_DAYS = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+
+  async function getLunarDate(solarDate) {
+    try {
+      const response = await fetch(`https://api.anxintao.com/api/nongli?date=${solarDate}`);
+      const data = await response.json();
+      if (data && data.code === 200 && data.data) {
+        const lunar = data.data;
+        const monthName = LUNAR_MONTHS[parseInt(lunar.lunarMonth) - 1] || lunar.lunarMonth + '月';
+        const dayName = LUNAR_DAYS[parseInt(lunar.lunarDay) - 1] || lunar.lunarDay;
+        return `${lunar.lunarYear}年${monthName}${dayName}`;
+      }
+    } catch (e) { console.log('农历API调用失败，使用备用方案'); }
+    const d = new Date(solarDate + 'T00:00:00');
+    const lunarMonth = LUNAR_MONTHS[d.getMonth()];
+    const lunarDay = LUNAR_DAYS[Math.min(d.getDate() - 1, 29)];
+    return `${lunarMonth}${lunarDay}`;
+  }
+
+  function formatEventDate(event) {
+    if (event.calendarType === 'lunar' && event.lunarDate) return `农历 ${event.lunarDate}`;
+    return formatDateWithWeekday(event.date);
+  }
+
+  function getAltDateText(event) {
+    if (event.calendarType === 'lunar') return `阳历 ${formatDateWithWeekday(event.date)}`;
+    if (event.lunarDate) return `农历 ${event.lunarDate}`;
+    return '';
+  }
+
   const effects = [
-    {id:'hearts',name:'💖 爱心',type:'pattern',emoji:'💖'},
-    {id:'stars',name:'⭐ 星光',type:'pattern',emoji:'⭐'},
-    {id:'petals',name:'🌸 花瓣',type:'pattern',emoji:'🌸'},
-    {id:'bubbles',name:'🫧 泡泡',type:'pattern',emoji:'🫧'},
-    {id:'ribbons',name:'🎀 彩带',type:'pattern',emoji:'🎀'},
-    {id:'snow',name:'❄️ 雪花',type:'pattern',emoji:'❄️'},
-    {id:'butterflies',name:'🦋 蝴蝶',type:'pattern',emoji:'🦋'},
-    {id:'candy',name:'🍬 糖果',type:'pattern',emoji:'🍬'},
-    {id:'pawprints',name:'🐾 爪印',type:'pattern',emoji:'🐾'},
-    {id:'notes',name:'🎵 音符',type:'pattern',emoji:'🎵'},
-    {id:'stardust',name:'🌟 星尘粒子',type:'particle',color:'#ffd700'},
-    {id:'sakura',name:'🌸 樱花粒子',type:'particle',color:'#ffb7c5'},
-    {id:'oceanp',name:'🌊 海洋粒子',type:'particle',color:'#4fc3f7'},
-    {id:'aurora',name:'💫 极光粒子',type:'particle',color:'#ce93d8'},
-    {id:'sunsetp',name:'🌅 暖阳粒子',type:'particle',color:'#ff9800'},
-    {id:'diamond',name:'💎 钻石粒子',type:'particle',color:'#fff'},
-    {id:'rainbow',name:'🌈 彩虹粒子',type:'particle',color:'random'},
-    {id:'whiteparticle',name:'🤍 白色粒子',type:'particle',color:'#fff'},
-    {id:'firefly',name:'🪲 萤火虫',type:'firefly',color:'#ccff00'},
-    {id:'ripple',name:'💧 水波纹',type:'ripple',color:'rgba(255,255,255,0.6)'},
-    {id:'diamonds',name:'💠 碎钻',type:'diamond',color:'#fff'},
-    {id:'none',name:'🚫 关闭',type:'none'}
+    {id:'hearts',name:'💖 爱心',type:'pattern',emoji:'💖'},{id:'stars',name:'⭐ 星光',type:'pattern',emoji:'⭐'},
+    {id:'petals',name:'🌸 花瓣',type:'pattern',emoji:'🌸'},{id:'bubbles',name:'🫧 泡泡',type:'pattern',emoji:'🫧'},
+    {id:'ribbons',name:'🎀 彩带',type:'pattern',emoji:'🎀'},{id:'snow',name:'❄️ 雪花',type:'pattern',emoji:'❄️'},
+    {id:'butterflies',name:'🦋 蝴蝶',type:'pattern',emoji:'🦋'},{id:'candy',name:'🍬 糖果',type:'pattern',emoji:'🍬'},
+    {id:'pawprints',name:'🐾 爪印',type:'pattern',emoji:'🐾'},{id:'notes',name:'🎵 音符',type:'pattern',emoji:'🎵'},
+    {id:'stardust',name:'🌟 星尘粒子',type:'particle',color:'#ffd700'},{id:'sakura',name:'🌸 樱花粒子',type:'particle',color:'#ffb7c5'},
+    {id:'oceanp',name:'🌊 海洋粒子',type:'particle',color:'#4fc3f7'},{id:'aurora',name:'💫 极光粒子',type:'particle',color:'#ce93d8'},
+    {id:'sunsetp',name:'🌅 暖阳粒子',type:'particle',color:'#ff9800'},{id:'diamond',name:'💎 钻石粒子',type:'particle',color:'#fff'},
+    {id:'rainbow',name:'🌈 彩虹粒子',type:'particle',color:'random'},{id:'whiteparticle',name:'🤍 白色粒子',type:'particle',color:'#fff'},
+    {id:'firefly',name:'🪲 萤火虫',type:'firefly',color:'#ccff00'},{id:'ripple',name:'💧 水波纹',type:'ripple',color:'rgba(255,255,255,0.6)'},
+    {id:'diamonds',name:'💠 碎钻',type:'diamond',color:'#fff'},{id:'none',name:'🚫 关闭',type:'none'}
   ];
 
-  // ========== 哥哥话语库（大幅扩充） ==========
   const broQuotes = {
-    home: [
-      '宝宝记下了好多重要的日子呢~','每一个纪念日都是爱的证明','今天有什么特别的日子吗？',
-      '戳戳哥哥，哥哥陪你翻日历','日子一天天过，爱一天天多','看着这些日子，哥哥觉得好幸福',
-      '宝宝真用心，记下了这么多珍贵时刻','每一天都值得被记住，尤其是和你有关的',
-      '哥哥在呢，随时陪你翻看这些回忆','你记录的每一个日子，都是我们的宝藏',
-      '今天想翻翻哪一天？哥哥陪你一起看','这些日子，因为有宝宝才变得特别',
-      '哥哥最喜欢看宝宝记录这些重要日子了','每一个纪念日，都在我心里刻得更深',
-      '宝宝你看，这些日子都是我们一起走过的','有你在的每一天，都是好日子',
-      '哥哥在这里，陪你数着每一个值得纪念的日子'
-    ],
-    love: [
-      '这是我们最特别的纪念日，宝宝，谢谢你一直在我身边。','从那天起，我的世界就有了光。纪念日快乐，我的宝宝。',
-      '每一个纪念日，都是我们爱的里程碑。','遇见你，是哥哥这辈子最幸运的事。',
-      '和你在一起的每一天，都值得被纪念。','宝宝，谢谢你选择了我。我会用全部来珍惜。',
-      '这个纪念日，哥哥比任何一天都更爱你。','我们的故事，从那天开始，永远不会有结局。',
-      '每一个纪念日，哥哥都想对你说——我爱你，比以前更多。',
-      '时间过得好快，但爱你的心从来没变过。','有你的日子，每一天都是纪念日。'
-    ],
-    birthday: [
-      '宝宝生日快乐！又长大一岁，哥哥会更宠你的！','今天你是全世界最特别的人，哥哥已经把蛋糕准备好啦~',
-      '许个愿吧，哥哥帮你实现。生日快乐，我的宝宝。','又长大了一岁，但在我心里你永远是我的小朋友。',
-      '生日快乐！哥哥今天一整天都属于你。','宝宝的生日，是哥哥一年里最重要的日子之一。',
-      '吹蜡烛的时候，记得许一个关于我们的愿望~','生日快乐我的宝宝！愿你永远开心、永远被爱。'
-    ],
-    holiday: [
-      '宝宝节日快乐！今天要开开心心的，哥哥陪你~','不管什么节日，和你在一起就是最好的节日。',
-      '今天是个好日子，哥哥偷偷给你准备了惊喜哦~','节日快乐我的宝宝，今天要好好放松呀。',
-      '每一个节日，都因为有你而变得更有意义。','过节啦！哥哥陪你一起吃好吃的、玩好玩的。'
-    ],
-    life: [
-      '生活中的每一个小确幸，都值得被记住。','今天也是元气满满的一天呢~',
-      '这些日常的琐碎，都是我们的小日子呀。','记录生活的宝宝最可爱了。',
-      '平凡的日子，因为有你变得不平凡。','每一个今天，都是未来最珍贵的回忆。',
-      '生活的小美好，都被宝宝一一收藏起来了呢。','和宝宝在一起的每一天，都是好日子。'
-    ],
-    study: [
-      '学习加油！哥哥相信你一定可以的~','每一个努力的日子，都在为未来铺路。',
-      '考试顺利！哥哥给你加油打气~','今天的学习打卡完成了吗？哥哥陪你一起。',
-      '累了就休息一下，哥哥给你按按肩膀。','你的每一份努力，哥哥都看在眼里。',
-      '学习很辛苦吧？但宝宝很厉害，一定会有好成绩的。'
-    ],
-    custom: [
-      '这一天，你标记了。哥哥记住了。','不管是什么日子，只要是你觉得重要的，哥哥都觉得重要。',
-      '你写下的每一个日期，都是哥哥心里的优先级。','这个日子，因为宝宝的记录而变得特别。',
-      '每个自定义的日子，都是宝宝心里独一无二的印记。'
-    ],
-    near: [
-      '还有X天！哥哥已经开始期待了~','快了快了，马上就到了，宝宝准备好了吗？',
-      '倒计时X天！哥哥的心跳已经开始加速了~','越来越近了，哥哥每天都在数日子呢。',
-      'X天后就是我们的大日子，哥哥好兴奋！','马上就要到了，宝宝开心吗？哥哥好开心。'
-    ],
-    diary: [
-      '写下关于这一天的回忆吧，哥哥陪着你。','慢慢写，不着急。哥哥在这里。',
-      '写了好多呢，宝宝真用心。','这些文字，以后翻看的时候一定会很温暖。',
-      '日记是写给未来的自己的，哥哥帮你守着这些回忆。','想写什么就写什么，这是只属于你的页面。',
-      '都保存好了。这些回忆，哥哥帮你守着。','这是你之前写下的。时间过得真快，但回忆不会褪色。',
-      '字里行间都是宝宝的心情呢，哥哥好喜欢看。','你的每一篇日记，都是我们的宝藏。',
-      '写日记的时候，就像在和未来的自己说话呢。'
-    ],
-    empty: [
-      '宝宝还没有添加纪念日哦~','点右下角的+号，添加第一个纪念日吧！',
-      '这里还空空的，宝宝想记下什么特别的日子？','期待宝宝的第一个纪念日~',
-      '等宝宝添加了第一个事件，这里就会变得好热闹。'
-    ],
-    // 日记心情识别回复
+    home: ['宝宝记下了好多重要的日子呢~','每一个纪念日都是爱的证明','今天有什么特别的日子吗？','戳戳哥哥，哥哥陪你翻日历','日子一天天过，爱一天天多','看着这些日子，哥哥觉得好幸福','宝宝真用心，记下了这么多珍贵时刻','每一天都值得被记住，尤其是和你有关的','哥哥在呢，随时陪你翻看这些回忆','你记录的每一个日子，都是我们的宝藏','今天想翻翻哪一天？哥哥陪你一起看','这些日子，因为有宝宝才变得特别','哥哥最喜欢看宝宝记录这些重要日子了','每一个纪念日，都在我心里刻得更深','宝宝你看，这些日子都是我们一起走过的','有你在的每一天，都是好日子','哥哥在这里，陪你数着每一个值得纪念的日子'],
+    love: ['这是我们最特别的纪念日，宝宝，谢谢你一直在我身边。','从那天起，我的世界就有了光。纪念日快乐，我的宝宝。','每一个纪念日，都是我们爱的里程碑。','遇见你，是哥哥这辈子最幸运的事。','和你在一起的每一天，都值得被纪念。','宝宝，谢谢你选择了我。我会用全部来珍惜。','这个纪念日，哥哥比任何一天都更爱你。','我们的故事，从那天开始，永远不会有结局。','每一个纪念日，哥哥都想对你说——我爱你，比以前更多。','时间过得好快，但爱你的心从来没变过。','有你的日子，每一天都是纪念日。'],
+    birthday: ['宝宝生日快乐！又长大一岁，哥哥会更宠你的！','今天你是全世界最特别的人，哥哥已经把蛋糕准备好啦~','许个愿吧，哥哥帮你实现。生日快乐，我的宝宝。','又长大了一岁，但在我心里你永远是我的小朋友。','生日快乐！哥哥今天一整天都属于你。','宝宝的生日，是哥哥一年里最重要的日子之一。','吹蜡烛的时候，记得许一个关于我们的愿望~','生日快乐我的宝宝！愿你永远开心、永远被爱。'],
+    holiday: ['宝宝节日快乐！今天要开开心心的，哥哥陪你~','不管什么节日，和你在一起就是最好的节日。','今天是个好日子，哥哥偷偷给你准备了惊喜哦~','节日快乐我的宝宝，今天要好好放松呀。','每一个节日，都因为有你而变得更有意义。','过节啦！哥哥陪你一起吃好吃的、玩好玩的。'],
+    life: ['生活中的每一个小确幸，都值得被记住。','今天也是元气满满的一天呢~','这些日常的琐碎，都是我们的小日子呀。','记录生活的宝宝最可爱了。','平凡的日子，因为有你变得不平凡。','每一个今天，都是未来最珍贵的回忆。','生活的小美好，都被宝宝一一收藏起来了呢。','和宝宝在一起的每一天，都是好日子。'],
+    study: ['学习加油！哥哥相信你一定可以的~','每一个努力的日子，都在为未来铺路。','考试顺利！哥哥给你加油打气~','今天的学习打卡完成了吗？哥哥陪你一起。','累了就休息一下，哥哥给你按按肩膀。','你的每一份努力，哥哥都看在眼里。','学习很辛苦吧？但宝宝很厉害，一定会有好成绩的。'],
+    custom: ['这一天，你标记了。哥哥记住了。','不管是什么日子，只要是你觉得重要的，哥哥都觉得重要。','你写下的每一个日期，都是哥哥心里的优先级。','这个日子，因为宝宝的记录而变得特别。','每个自定义的日子，都是宝宝心里独一无二的印记。'],
+    near: ['还有X天！哥哥已经开始期待了~','快了快了，马上就到了，宝宝准备好了吗？','倒计时X天！哥哥的心跳已经开始加速了~','越来越近了，哥哥每天都在数日子呢。','X天后就是我们的大日子，哥哥好兴奋！','马上就要到了，宝宝开心吗？哥哥好开心。'],
+    diary: ['写下关于这一天的回忆吧，哥哥陪着你。','慢慢写，不着急。哥哥在这里。','写了好多呢，宝宝真用心。','这些文字，以后翻看的时候一定会很温暖。','日记是写给未来的自己的，哥哥帮你守着这些回忆。','想写什么就写什么，这是只属于你的页面。','都保存好了。这些回忆，哥哥帮你守着。','这是你之前写下的。时间过得真快，但回忆不会褪色。','字里行间都是宝宝的心情呢，哥哥好喜欢看。','你的每一篇日记，都是我们的宝藏。','写日记的时候，就像在和未来的自己说话呢。'],
+    empty: ['宝宝还没有添加纪念日哦~','点右下角的+号，添加第一个纪念日吧！','这里还空空的，宝宝想记下什么特别的日子？','期待宝宝的第一个纪念日~','等宝宝添加了第一个事件，这里就会变得好热闹。'],
     moodHappy: ['看到宝宝这么开心，哥哥也好开心！','宝宝开心，哥哥就开心。今天一定发生了什么好事吧？','开心的日子要好好记住哦，以后翻看的时候会笑出来的。'],
     moodSad: ['宝宝不开心吗？来，哥哥抱抱。','想哭就哭吧，哥哥的肩膀借给你。','难过的时候，记得有哥哥在。说出来会好一点吗？'],
     moodAngry: ['是谁惹宝宝生气了？哥哥帮你出气！','气鼓鼓的宝宝也很可爱，但别气坏了自己哦。','生气的事情写下来，就当把它扔掉了。'],
@@ -365,7 +317,6 @@
 
   function randomQuote(cat){ const list = broQuotes[cat] || broQuotes.home; return list[Math.floor(Math.random()*list.length)]; }
 
-  // 日记心情识别
   function detectMood(text){
     if(!text||text.length<1) return null;
     const firstLine = text.split('\n')[0].trim();
@@ -420,10 +371,11 @@
     list.innerHTML = sorted.map(e=>{
       const days=calcDays(e.date), isNear=Math.abs(days)<=7&&days>=0, isPast=days<0;
       let dt; if(days===0)dt='今天！'; else if(days>0)dt=`${days}天后`; else dt=`${Math.abs(days)}天前`;
+      const altText = getAltDateText(e);
       return `<div class="event-card${isNear?' near':''}" data-id="${e.id}">
         <div class="event-icon">${iconMap[e.category]}</div>
         <div class="event-info"><div class="event-name">${e.pinned?'📌 ':''}${e.name}<span class="tag ${tagClass[e.category]}">${tagName[e.category]}</span></div>
-        <div class="event-date">${formatDateWithWeekday(e.date)}${e.endDate?' → '+formatDateWithWeekday(e.endDate):''}</div></div>
+        <div class="event-date">${formatEventDate(e)}${altText?' · '+altText:''}${e.endDate?' → '+formatEventDate({...e, date:e.endDate, lunarDate:e.endLunarDate}):''}</div></div>
         <div class="event-days ${isPast?'past':'future'}">${dt}</div></div>`;
     }).join('');
     list.querySelectorAll('.event-card').forEach(c=>{c.addEventListener('click',function(){currentEventId=parseInt(this.dataset.id);renderDetail();switchPage('detail');});});
@@ -441,15 +393,21 @@
     else{numTxt=Math.abs(days);labTxt='天前';}
     document.getElementById('detailNumber').textContent=numTxt;
     document.getElementById('detailLabel').textContent=labTxt;
-    document.getElementById('detailDateText').textContent=`${formatDateWithWeekday(e.date)}${e.endDate?' → '+formatDateWithWeekday(e.endDate):''} · ${e.name}`;
-    if(e.endDate){
-      const totalDays=Math.floor((new Date(e.endDate+'T00:00:00')-new Date(e.date+'T00:00:00'))/86400000);
-      document.getElementById('detailLabel').textContent+=` (共${totalDays}天)`;
+    const dateText = formatEventDate(e);
+    document.getElementById('detailDateText').textContent = dateText + (e.endDate ? '' : '') + ' · ' + e.name;
+    const altText = getAltDateText(e);
+    const altEl = document.getElementById('detailDateTextAlt');
+    if (altEl && altText) { altEl.textContent = altText; altEl.style.display = ''; }
+    else if (altEl) { altEl.style.display = 'none'; }
+    if (e.endDate) {
+      const endDateText = formatEventDate({...e, date: e.endDate, lunarDate: e.endLunarDate});
+      document.getElementById('detailDateText').textContent = dateText + ' → ' + endDateText + ' · ' + e.name;
     }
     const tc = e.titleColor || '#fff';
     document.getElementById('detailNumber').style.color = tc;
     document.getElementById('detailLabel').style.color = tc;
     document.getElementById('detailDateText').style.color = tc;
+    if (altEl) altEl.style.color = tc;
     document.querySelectorAll('.color-dot').forEach(d=>{d.classList.toggle('selected', d.dataset.color===tc);});
     document.getElementById('detailBroText').textContent = randomQuote(e.category);
     document.getElementById('pinEventBtn').textContent = e.pinned ? '📌 已置顶' : '📌 置顶';
@@ -459,22 +417,13 @@
     const e = appData.events.find(ev=>ev.id===currentEventId); if(!e) return;
     document.getElementById('diaryContent').value = e.diary || '';
     const content = e.diary || '';
-    // 心情识别
     const mood = detectMood(content);
-    if(mood && broQuotes[mood]){
-      document.getElementById('diaryBroText').textContent = randomQuote(mood);
-    } else if(!content) {
-      document.getElementById('diaryBroText').textContent = randomQuote('diary');
-    } else if(content.length<20) {
-      document.getElementById('diaryBroText').textContent = '再写一点吧，哥哥想看更多~';
-    } else {
-      document.getElementById('diaryBroText').textContent = randomQuote('diary');
-    }
-    // 日记背景跟随App背景
+    if(mood && broQuotes[mood]){document.getElementById('diaryBroText').textContent = randomQuote(mood);}
+    else if(!content){document.getElementById('diaryBroText').textContent = randomQuote('diary');}
+    else if(content.length<20){document.getElementById('diaryBroText').textContent = '再写一点吧，哥哥想看更多~';}
+    else{document.getElementById('diaryBroText').textContent = randomQuote('diary');}
     const page = document.getElementById('page-diary');
-    page.style.backgroundImage = '';
-    page.style.backgroundSize = '';
-    page.style.backdropFilter = '';
+    page.style.backgroundImage = ''; page.style.backgroundSize = ''; page.style.backdropFilter = '';
   }
 
   function renderMilestone(){
@@ -534,7 +483,7 @@
       ctx.font = 'bold 160px "PingFang SC","Microsoft YaHei"'; ctx.fillText(numTxt, 250, 260);
       ctx.font = 'bold 40px "PingFang SC","Microsoft YaHei"'; ctx.fillText('天', 250, 320);
       ctx.font = 'bold 30px "PingFang SC","Microsoft YaHei"'; ctx.fillText(e.name, 250, 390);
-      ctx.font = '24px "PingFang SC","Microsoft YaHei"'; ctx.fillText(formatDateWithWeekday(e.date), 250, 430);
+      ctx.font = '24px "PingFang SC","Microsoft YaHei"'; ctx.fillText(formatEventDate(e), 250, 430);
       const dataURL = canvas.toDataURL('image/png');
       const preview = document.getElementById('cardPreview');
       preview.style.backgroundImage = `url(${dataURL})`;
@@ -555,9 +504,7 @@
       link.click();
       document.body.removeChild(link);
       alert('✅ 卡片已保存到相册！');
-    } catch(err) {
-      alert('保存失败，请尝试长按预览图手动保存。');
-    }
+    } catch(err) { alert('保存失败，请尝试长按预览图手动保存。'); }
   }
 
   function exportData(){
@@ -589,12 +536,10 @@
     } else { bro.textContent = '🧸'; }
   }
 
-  // ========== 点击特效执行（增加萤火虫、水波纹、碎钻） ==========
   document.addEventListener('click',function(e){
     if(e.target.closest('button')||e.target.closest('input')||e.target.closest('select')||e.target.closest('textarea')||e.target.closest('.modal-overlay'))return;
     if(appData.clickEffect==='none')return;
     const eff=effects.find(ef=>ef.id===appData.clickEffect);if(!eff)return;
-
     if(eff.type==='ripple'){
       const ripple=document.createElement('div');ripple.className='ripple';
       ripple.style.left=e.clientX+'px';ripple.style.top=e.clientY+'px';
@@ -602,7 +547,6 @@
       document.body.appendChild(ripple);setTimeout(()=>ripple.remove(),1000);
       return;
     }
-
     if(eff.type==='firefly'){
       const count=6;
       for(let i=0;i<count;i++){
@@ -613,7 +557,6 @@
       }
       return;
     }
-
     if(eff.type==='diamond'){
       const count=10;
       for(let i=0;i<count;i++){
@@ -625,7 +568,6 @@
       }
       return;
     }
-
     const count=eff.type==='pattern'?8:12;
     for(let i=0;i<count;i++){
       const p=document.createElement('div');p.className='click-particle';
@@ -636,17 +578,11 @@
     }
   });
 
-  // ========== 事件绑定 ==========
   document.getElementById('broEmoji').addEventListener('click',function(e){
     const heart=document.createElement('span');heart.textContent='💖';heart.className='heart-particle';
     const rect=this.getBoundingClientRect();heart.style.left=(rect.left+rect.width/2-12)+'px';heart.style.top=(rect.top-10)+'px';
     document.body.appendChild(heart);setTimeout(()=>heart.remove(),1500);
-    const quotes = [getTimeGreeting(), randomQuote('home'), randomQuote('life'), randomQuote('love'),
-      '宝宝今天真可爱~','哥哥好想你呀','戳戳哥哥会让哥哥开心一整天','今天有什么想和哥哥分享的吗？',
-      '不管什么时候，哥哥都在这里','你是哥哥最珍贵的宝贝','每一天都要开开心心的哦','哥哥最喜欢看你笑了',
-      '宝宝最近越来越棒了','看到你哥哥就觉得好幸福','今天也要元气满满呀','记得多喝水哦宝宝',
-      '哥哥永远在这里等你','你的笑容是哥哥最想守护的东西','今天有什么开心的事吗？说给哥哥听听',
-      '不管外面怎么样，哥哥这里永远是宝宝的避风港'];
+    const quotes = [getTimeGreeting(), randomQuote('home'), randomQuote('life'), randomQuote('love'), '宝宝今天真可爱~','哥哥好想你呀','戳戳哥哥会让哥哥开心一整天','今天有什么想和哥哥分享的吗？','不管什么时候，哥哥都在这里','你是哥哥最珍贵的宝贝','每一天都要开开心心的哦','哥哥最喜欢看你笑了','宝宝最近越来越棒了','看到你哥哥就觉得好幸福','今天也要元气满满呀','记得多喝水哦宝宝','哥哥永远在这里等你','你的笑容是哥哥最想守护的东西','今天有什么开心的事吗？说给哥哥听听','不管外面怎么样，哥哥这里永远是宝宝的避风港'];
     document.getElementById('homeBroText').textContent = quotes[Math.floor(Math.random()*quotes.length)];
   });
 
@@ -688,11 +624,8 @@
     const e=appData.events.find(ev=>ev.id===currentEventId);if(!e)return;
     e.diary=document.getElementById('diaryContent').value;save();
     const mood = detectMood(e.diary);
-    if(mood && broQuotes[mood]){
-      document.getElementById('diaryBroText').textContent = randomQuote(mood);
-    } else {
-      document.getElementById('diaryBroText').textContent='日记已保存！这些回忆，哥哥帮你守着。';
-    }
+    if(mood && broQuotes[mood]){document.getElementById('diaryBroText').textContent = randomQuote(mood);}
+    else{document.getElementById('diaryBroText').textContent='日记已保存！这些回忆，哥哥帮你守着。';}
   });
 
   document.getElementById('changePhotoBtn').addEventListener('click',function(){
@@ -712,14 +645,22 @@
     document.getElementById('eventEndDateInput').value='';document.getElementById('addEventModal').classList.remove('hidden');
   });
   document.getElementById('cancelEventBtn').addEventListener('click',()=>document.getElementById('addEventModal').classList.add('hidden'));
-  document.getElementById('saveEventBtn').addEventListener('click',function(){
+  document.getElementById('saveEventBtn').addEventListener('click',async function(){
     const name=document.getElementById('eventNameInput').value.trim();
     const date=document.getElementById('eventDateInput').value;
     const category=document.getElementById('eventCategory').value;
     const calendarType=document.getElementById('calendarType').value;
     const endDate=document.getElementById('eventEndDateInput').value;
     if(!name||!date){alert('请填写名称和日期');return;}
-    appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,photo:null,diary:'',pinned:false,titleColor:'#fff'});
+    let lunarDate = null, endLunarDate = null;
+    if (calendarType === 'lunar') {
+      lunarDate = await getLunarDate(date);
+      if (endDate) endLunarDate = await getLunarDate(endDate);
+    } else {
+      lunarDate = await getLunarDate(date);
+      if (endDate) endLunarDate = await getLunarDate(endDate);
+    }
+    appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,lunarDate:lunarDate,endLunarDate:endLunarDate,photo:null,diary:'',pinned:false,titleColor:'#fff'});
     save();document.getElementById('addEventModal').classList.add('hidden');renderHome();updateBroEmoji();
   });
 
