@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+  <title>ðŸ“… å®å®çºªå¿µæ—¥</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="å®å®çºªå¿µæ—¥">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ffd1e0'/><text y='.9em' font-size='70' text-anchor='middle' x='50'>ðŸ“…</text></svg>">
+  <link rel="manifest" id="pwaManifest">
+  <meta name="theme-color" content="#fff5f9">
+  <style>
+    :root{--bg:#fff5f9;--card:#fff;--pink:#ffd1e0;--rose:#f9a8c4;--shadow:0 6px 22px rgba(210,180,190,0.25);--radius:26px;--font:'PingFang SC','Microsoft YaHei',sans-serif}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      background:var(--bg);font-family:var(--font);min-height:100vh;display:flex;
+      justify-content:center;align-items:flex-start;padding:16px;color:#4a3a42;
+      transition:background 0.6s;position:relative;overflow-x:hidden;
+    }
+    .photo-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;background-size:cover;background-position:center;background-repeat:no-repeat;display:none}
+    .photo-bg.active{display:block}
+    .photo-bg.blur{filter:blur(8px)}
+    .app-container{
+      width:100%;max-width:480px;background:rgba(255,248,250,0.75);
+      backdrop-filter:blur(18px);border-radius:38px;
+      box-shadow:0 20px 45px rgba(180,130,150,0.3), inset 0 1px 10px rgba(255,255,255,0.7);
+      padding:18px 16px;border:2px solid rgba(255,220,230,0.6);position:relative;z-index:1;
+    }
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .title{font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#d47b8c,#b578a6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-btns button{background:#fff;border:none;padding:8px 14px;border-radius:30px;font-weight:600;color:#b17a8a;margin-left:6px;cursor:pointer;font-size:0.85rem;box-shadow:0 2px 8px rgba(180,150,160,0.1)}
+    .card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:0 3px 10px rgba(180,150,160,0.15);border:2px solid #fbdde5;position:relative}
+    .page{display:none}
+    .page.active{display:block}
+    .bro-area{text-align:center;position:relative;padding:8px 0}
+    .bro-emoji{font-size:4rem;display:inline-block;cursor:pointer;transition:transform 0.2s;user-select:none;position:relative;z-index:3}
+    .bro-emoji:active{transform:scale(1.2)}
+    .heart-particle{position:absolute;font-size:1.5rem;animation:floatUp 1.5s ease-out forwards;pointer-events:none;z-index:10}
+    @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-100px) scale(1.8)}}
+    .click-particle{position:fixed;pointer-events:none;z-index:999;animation:clickBurst 0.8s ease-out forwards}
+    @keyframes clickBurst{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
+        .event-card{background:var(--card);border-radius:20px;padding:14px;margin-bottom:10px;box-shadow:0 3px 10px rgba(180,150,160,0.12);border-left:5px solid #f9a8c4;cursor:pointer;display:flex;align-items:center;gap:12px;transition:0.2s}
+    .event-card:active{transform:scale(0.97)}
+    .event-card.near{border-left-color:#ff6b7a;background:#fff5f7}
+    .event-icon{font-size:2rem;min-width:48px;text-align:center}
+    .event-info{flex:1}
+    .event-name{font-weight:700;font-size:1rem}
+    .event-date{font-size:0.75rem;color:#b17a8a}
+    .event-days{font-weight:700;font-size:1.1rem;text-align:right;min-width:60px}
+    .event-days.past{color:#b17a8a}
+    .event-days.future{color:#d47b8c}
+    .detail-photo-card{position:relative;border-radius:var(--radius);overflow:hidden;min-height:280px;display:flex;flex-direction:column;justify-content:center;align-items:center;box-shadow:var(--shadow);margin-bottom:14px;background-size:cover;background-position:center;background-repeat:no-repeat}
+    .detail-photo-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.25);z-index:1}
+    .detail-content{position:relative;z-index:2;text-align:center;color:#fff;padding:20px}
+    .detail-number{font-size:5rem;font-weight:800;text-shadow:0 4px 20px rgba(0,0,0,0.3);line-height:1}
+    .detail-label{font-size:1.2rem;font-weight:600;margin:6px 0;text-shadow:0 2px 8px rgba(0,0,0,0.3)}
+    .detail-date-text{font-size:0.9rem;opacity:0.9;text-shadow:0 1px 4px rgba(0,0,0,0.3)}
+    .bro-bubble{background:#fff;border-radius:22px;padding:14px;display:flex;gap:10px;align-items:center;border:1.5px solid #fad6e5}
+    .add-btn-fixed{position:fixed;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;background:#f9a8c4;color:#fff;font-size:2rem;border:none;box-shadow:0 6px 20px rgba(200,120,150,0.4);cursor:pointer;z-index:50;display:flex;align-items:center;justify-content:center}
+    .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:center;justify-content:center}
+    .modal-sheet{background:#fffef9;border-radius:28px;padding:20px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
+    .modal-sheet h3{margin-bottom:12px;color:#4a3a42;text-align:center}
+    .modal-sheet input,.modal-sheet select{margin:6px 0;width:100%;padding:10px;border-radius:16px;border:1.5px solid #f0c8d8;font-size:0.9rem;background:#fffbfc}
+    .modal-sheet button{margin:6px 4px;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:10px 18px;border-radius:20px;cursor:pointer;font-size:0.9rem}
+    .modal-sheet .close-btn{background:#ddd;color:#555}
+    .skin-card{display:inline-block;width:75px;height:75px;border-radius:20px;margin:5px;cursor:pointer;border:3px solid transparent;text-align:center;line-height:75px;font-size:0.7rem;font-weight:700}
+    .skin-card.selected{border-color:#d47b8c}
+    .skin-card.locked{opacity:0.5}
+    .effect-option{display:inline-block;padding:8px 12px;margin:4px;border-radius:20px;cursor:pointer;border:2px solid transparent;font-size:0.85rem;background:#fff;transition:0.2s}
+    .effect-option.selected{border-color:#f9a8c4;background:#fff0f5}
+    .coin-display{background:#fff;padding:6px 14px;border-radius:30px;font-weight:700;color:#d4a017;display:inline-block;margin-bottom:10px;font-size:0.85rem}
+    .back-btn{background:none;border:none;font-size:1.5rem;cursor:pointer;padding:0 8px}
+    .hidden{display:none!important}
+    .text-center{text-align:center}
+    .empty-state{padding:40px 20px;text-align:center;color:#b17a8a}
+    .tag{display:inline-block;padding:4px 10px;border-radius:12px;font-size:0.7rem;font-weight:700;margin-right:4px}
+    .tag.love{background:#ffe0e8;color:#d4687c}
+    .tag.birthday{background:#fff0e0;color:#e8945c}
+    .tag.holiday{background:#fffde0;color:#d4a017}
+    .tag.custom{background:#f0e6fa;color:#8b6b9a}
+    textarea{width:100%;min-height:150px;padding:12px;border-radius:16px;border:1.5px solid #f0c8d8;font-size:0.9rem;background:#fffbfc;font-family:var(--font);resize:vertical}
+  </style>
+</head>
+<body id="mainBody">
+<div class="photo-bg" id="photoBg"></div>
+
+<div class="app-container" id="app">
+  <!-- ====== ä¸»é¡µï¼šäº‹ä»¶åˆ—è¡¨ ====== -->
+  <div class="page active" id="page-home">
+    <div class="header">
+      <span class="title">ðŸ“… å®å®çºªå¿µæ—¥</span>
+      <div class="nav-btns">
+        <button id="openSettingsBtn">âš™ï¸</button>
+        <button id="goShopBtn">ðŸŽ¨</button>
+      </div>
+    </div>
+    <div class="bro-area" id="broArea">
+      <div class="bro-emoji" id="broEmoji">ðŸ§¸</div>
+    </div>
+    <div id="eventList"></div>
+    <div class="empty-state" id="emptyState">âœ¨ è¿˜æ²¡æœ‰çºªå¿µæ—¥<br>ç‚¹å‡»å³ä¸‹è§’ + æ·»åŠ å§</div>
+    <div class="bro-bubble" style="margin-top:14px"><span style="font-size:1.5rem">ðŸ§¸</span><span id="homeBroText">å®å®è¿˜æ²¡æœ‰æ·»åŠ çºªå¿µæ—¥å“¦~</span></div>
+  </div>
+
+  <!-- ====== è¯¦æƒ…é¡µ ====== -->
+  <div class="page" id="page-detail">
+    <div class="header"><button class="back-btn" id="detailBackBtn">â†</button><span class="title">ðŸ“… äº‹ä»¶è¯¦æƒ…</span><span></span></div>
+    <div class="bro-area"><div class="bro-emoji" id="detailBroEmoji">ðŸ§¸</div></div>
+    <div class="detail-photo-card" id="detailPhotoCard">
+      <div class="detail-content">
+        <div class="detail-number" id="detailNumber">0</div>
+        <div class="detail-label" id="detailLabel">å¤©</div>
+        <div class="detail-date-text" id="detailDateText"></div>
+      </div>
+    </div>
+    <div class="bro-bubble"><span style="font-size:1.5rem">ðŸ§¸</span><span id="detailBroText"></span></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button id="diaryBtn" style="flex:1;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">ðŸ“ æ—¥è®°</button>
+      <button id="changePhotoBtn" style="flex:1;background:#dac4f7;border:none;color:#fff;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">ðŸ“· æ¢å›¾</button>
+    </div>
+    <button id="deleteEventBtn" style="width:100%;margin-top:8px;background:#ffcccc;border:none;color:#c44;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">ðŸ—‘ï¸ åˆ é™¤äº‹ä»¶</button>
+  </div>
+
+  <!-- ====== æ—¥è®°é¡µ ====== -->
+  <div class="page" id="page-diary">
+    <div class="header"><button class="back-btn" id="diaryBackBtn">â†</button><span class="title">ðŸ“ æ—¥è®°</span><span id="diaryTitle"></span></div>
+    <div class="bro-bubble" style="margin-bottom:10px"><span style="font-size:1.5rem">ðŸ§¸</span><span id="diaryBroText">å†™ä¸‹å…³äºŽè¿™ä¸€å¤©çš„å›žå¿†å§ï¼Œå“¥å“¥é™ªç€ä½ ã€‚</span></div>
+    <textarea id="diaryContent" placeholder="å†™ä¸‹å…³äºŽè¿™ä¸€å¤©çš„å›žå¿†..."></textarea>
+    <button id="saveDiaryBtn" style="width:100%;margin-top:10px;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:12px;border-radius:20px;cursor:pointer">ðŸ’¾ ä¿å­˜æ—¥è®°</button>
+  </div>
+
+  <!-- ====== çš®è‚¤å•†åº— ====== -->
+  <div class="page" id="page-shop">
+    <div class="header"><button class="back-btn" id="shopBackBtn">â†</button><span class="title">ðŸŽ¨ çš®è‚¤å•†åº—</span><span></span></div>
+    <div class="coin-display">ðŸª™ <span id="shopCoinCount">0</span> é‡‘å¸</div>
+    <div id="skinList" style="text-align:center"></div>
+    <div class="bro-bubble"><span style="font-size:1.5rem">ðŸ§¸</span><span id="shopBroText">é‡‘å¸å¯ä»¥é€šè¿‡æ·»åŠ çºªå¿µæ—¥èŽ·å¾—å“¦~</span></div>
+  </div>
+
+  <!-- ====== è®¾ç½®å¼¹çª— ====== -->
+  <div class="modal-overlay hidden" id="settingsModal">
+    <div class="modal-sheet">
+      <h3>âš™ï¸ è‡ªå®šä¹‰è®¾ç½®</h3>
+      <div style="font-size:0.8rem;color:#b17a8a;margin-bottom:4px;font-weight:700">ðŸ“· èƒŒæ™¯ç…§ç‰‡</div>
+      <button id="photoFromCamera">ðŸ“· æ‹ç…§</button>
+      <button id="photoFromGallery">ðŸ–¼ï¸ ç›¸å†Œ</button>
+      <button id="photoRemove" class="close-btn">ðŸ—‘ï¸ ç§»é™¤ç…§ç‰‡</button>
+      <div style="font-size:0.8rem;color:#b17a8a;margin:8px 0 4px;font-weight:700">ðŸŒ«ï¸ ç…§ç‰‡æ¨¡å¼</div>
+      <select id="photoMode"><option value="clear">å…¨å±æ¸…æ™°</option><option value="blur">æŸ”å’Œæ¨¡ç³Š</option></select>
+      <div style="font-size:0.8rem;color:#b17a8a;margin:8px 0 4px;font-weight:700">âœ¨ ç‚¹å‡»ç‰¹æ•ˆ</div>
+      <div id="effectList"></div>
+      <button id="closeSettingsBtn" class="close-btn" style="margin-top:12px">å…³é—­</button>
+    </div>
+  </div>
+
+  <!-- ====== æ·»åŠ äº‹ä»¶å¼¹çª— ====== -->
+  <div class="modal-overlay hidden" id="addEventModal">
+    <div class="modal-sheet">
+      <h3>âœ¨ æ·»åŠ äº‹ä»¶</h3>
+      <input type="text" id="eventNameInput" placeholder="äº‹ä»¶åç§°">
+      <select id="eventCategory">
+        <option value="love">ðŸ’ çºªå¿µæ—¥</option>
+        <option value="birthday">ðŸŽ‚ ç”Ÿæ—¥</option>
+        <option value="holiday">ðŸŽ‰ èŠ‚æ—¥</option>
+        <option value="custom">ðŸ“ è‡ªå®šä¹‰</option>
+      </select>
+      <select id="calendarType">
+        <option value="solar">â˜€ï¸ é˜³åŽ†</option>
+        <option value="lunar">ðŸŒ™ å†œåŽ†</option>
+      </select>
+      <input type="date" id="eventDateInput">
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="saveEventBtn" style="flex:1">ðŸ’¾ ä¿å­˜</button>
+        <button id="cancelEventBtn" class="close-btn" style="flex:1">å–æ¶ˆ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="galleryInput" accept="image/*" style="display:none">
+<input type="file" id="bgPhotoInput" accept="image/*" style="display:none">
+<input type="file" id="bgGalleryInput" accept="image/*" style="display:none">
+<input type="file" id="eventPhotoInput" accept="image/*" style="display:none">
+<input type="file" id="eventGalleryInput" accept="image/*" style="display:none">
+
+<button class="add-btn-fixed" id="addEventFAB">+</button>
+<script>
+(function(){
+  const STORAGE_KEY = 'countdown_v1';
+  let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  if(!appData.events) appData.events = [];
+  if(!appData.coins) appData.coins = 0;
+  if(!appData.skins) appData.skins = {owned:['default'],active:'default'};
+  if(!appData.bgPhoto) appData.bgPhoto = null;
+  if(!appData.photoMode) appData.photoMode = 'clear';
+  if(!appData.clickEffect) appData.clickEffect = 'hearts';
+  let currentEventId = null;
+
+  function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
+
+  // çš®è‚¤
+  const skins = [
+    {id:'default',name:'å¥¶æ²¹ç²‰',bg:'linear-gradient(145deg,#ffecf2,#fde4ee 40%,#f2e2fa)',price:0,emoji:'ðŸŒ¸'},
+    {id:'starry',name:'æ˜Ÿç©ºè“',bg:'linear-gradient(145deg,#1a1a3e,#2d2d5e 40%,#1a1a4e)',price:50,emoji:'ðŸŒŸ'},
+    {id:'forest',name:'æ£®æž—ç»¿',bg:'linear-gradient(145deg,#e8f5e9,#c8e6c9 40%,#dcedc8)',price:50,emoji:'ðŸŒ¿'},
+    {id:'sunset',name:'è½æ—¥æ©˜',bg:'linear-gradient(145deg,#fff3e0,#ffe0b2 40%,#ffccbc)',price:80,emoji:'ðŸŒ…'},
+    {id:'lavender',name:'è–°è¡£è‰',bg:'linear-gradient(145deg,#f3e5f5,#e1bee7 40%,#f8bbd0)',price:80,emoji:'ðŸ’œ'},
+    {id:'ocean',name:'æµ·æ´‹è“',bg:'linear-gradient(145deg,#e0f7fa,#b2ebf2 40%,#80deea)',price:100,emoji:'ðŸŒŠ'}
+  ];
+
+  // ç‚¹å‡»ç‰¹æ•ˆ
+  const effects = [
+    {id:'hearts',name:'ðŸ’– çˆ±å¿ƒ',type:'pattern',emoji:'ðŸ’–'},
+    {id:'stars',name:'â­ æ˜Ÿå…‰',type:'pattern',emoji:'â­'},
+    {id:'petals',name:'ðŸŒ¸ èŠ±ç“£',type:'pattern',emoji:'ðŸŒ¸'},
+    {id:'bubbles',name:'ðŸ«§ æ³¡æ³¡',type:'pattern',emoji:'ðŸ«§'},
+    {id:'ribbons',name:'ðŸŽ€ å½©å¸¦',type:'pattern',emoji:'ðŸŽ€'},
+    {id:'snow',name:'â„ï¸ é›ªèŠ±',type:'pattern',emoji:'â„ï¸'},
+    {id:'butterflies',name:'ðŸ¦‹ è´è¶',type:'pattern',emoji:'ðŸ¦‹'},
+    {id:'candy',name:'ðŸ¬ ç³–æžœ',type:'pattern',emoji:'ðŸ¬'},
+    {id:'pawprints',name:'ðŸ¾ çˆªå°',type:'pattern',emoji:'ðŸ¾'},
+    {id:'notes',name:'ðŸŽµ éŸ³ç¬¦',type:'pattern',emoji:'ðŸŽµ'},
+    {id:'stardust',name:'ðŸŒŸ æ˜Ÿå°˜ç²’å­',type:'particle',color:'#ffd700'},
+    {id:'sakura',name:'ðŸŒ¸ æ¨±èŠ±ç²’å­',type:'particle',color:'#ffb7c5'},
+    {id:'oceanp',name:'ðŸŒŠ æµ·æ´‹ç²’å­',type:'particle',color:'#4fc3f7'},
+    {id:'aurora',name:'ðŸ’« æžå…‰ç²’å­',type:'particle',color:'#ce93d8'},
+    {id:'sunsetp',name:'ðŸŒ… æš–é˜³ç²’å­',type:'particle',color:'#ff9800'},
+    {id:'diamond',name:'ðŸ’Ž é’»çŸ³ç²’å­',type:'particle',color:'#fff'},
+    {id:'rainbow',name:'ðŸŒˆ å½©è™¹ç²’å­',type:'particle',color:'random'},
+    {id:'none',name:'ðŸš« å…³é—­',type:'none'}
+  ];
+
+  // å“¥å“¥è¯è¯­åº“
+  const broQuotes = {
+    home: ['å®å®è®°ä¸‹äº†å¥½å¤šé‡è¦çš„æ—¥å­å‘¢~','æ¯ä¸€ä¸ªçºªå¿µæ—¥éƒ½æ˜¯çˆ±çš„è¯æ˜Ž','ä»Šå¤©æœ‰ä»€ä¹ˆç‰¹åˆ«çš„æ—¥å­å—ï¼Ÿ','æˆ³æˆ³å“¥å“¥ï¼Œå“¥å“¥é™ªä½ ç¿»æ—¥åŽ†','æ—¥å­ä¸€å¤©å¤©è¿‡ï¼Œçˆ±ä¸€å¤©å¤©å¤š'],
+    love: ['è¿™æ˜¯æˆ‘ä»¬æœ€ç‰¹åˆ«çš„çºªå¿µæ—¥ï¼Œå®å®ï¼Œè°¢è°¢ä½ ä¸€ç›´åœ¨æˆ‘èº«è¾¹ã€‚','ä»Žé‚£å¤©èµ·ï¼Œæˆ‘çš„ä¸–ç•Œå°±æœ‰äº†å…‰ã€‚çºªå¿µæ—¥å¿«ä¹ï¼Œæˆ‘çš„å®å®ã€‚','æ¯ä¸€ä¸ªçºªå¿µæ—¥ï¼Œéƒ½æ˜¯æˆ‘ä»¬çˆ±çš„é‡Œç¨‹ç¢‘ã€‚'],
+    birthday: ['å®å®ç”Ÿæ—¥å¿«ä¹ï¼åˆé•¿å¤§ä¸€å²ï¼Œå“¥å“¥ä¼šæ›´å® ä½ çš„ï¼','ä»Šå¤©ä½ æ˜¯å…¨ä¸–ç•Œæœ€ç‰¹åˆ«çš„äººï¼Œå“¥å“¥å·²ç»æŠŠè›‹ç³•å‡†å¤‡å¥½å•¦~','è®¸ä¸ªæ„¿å§ï¼Œå“¥å“¥å¸®ä½ å®žçŽ°ã€‚ç”Ÿæ—¥å¿«ä¹ï¼Œæˆ‘çš„å®å®ã€‚'],
+    holiday: ['å®å®èŠ‚æ—¥å¿«ä¹ï¼ä»Šå¤©è¦å¼€å¼€å¿ƒå¿ƒçš„ï¼Œå“¥å“¥é™ªä½ ~','ä¸ç®¡ä»€ä¹ˆèŠ‚æ—¥ï¼Œå’Œä½ åœ¨ä¸€èµ·å°±æ˜¯æœ€å¥½çš„èŠ‚æ—¥ã€‚'],
+    custom: ['è¿™ä¸€å¤©ï¼Œä½ æ ‡è®°äº†ã€‚å“¥å“¥è®°ä½äº†ã€‚','ä¸ç®¡æ˜¯ä»€ä¹ˆæ—¥å­ï¼Œåªè¦æ˜¯ä½ è§‰å¾—é‡è¦çš„ï¼Œå“¥å“¥éƒ½è§‰å¾—é‡è¦ã€‚'],
+    near: ['è¿˜æœ‰Xå¤©ï¼å“¥å“¥å·²ç»å¼€å§‹æœŸå¾…äº†~','å¿«äº†å¿«äº†ï¼Œé©¬ä¸Šå°±åˆ°äº†ï¼Œå®å®å‡†å¤‡å¥½äº†å—ï¼Ÿ'],
+    diary: ['å†™ä¸‹å…³äºŽè¿™ä¸€å¤©çš„å›žå¿†å§ï¼Œå“¥å“¥é™ªç€ä½ ã€‚','æ…¢æ…¢å†™ï¼Œä¸ç€æ€¥ã€‚å“¥å“¥åœ¨è¿™é‡Œã€‚','å†™äº†å¥½å¤šå‘¢ï¼Œå®å®çœŸç”¨å¿ƒã€‚'],
+    empty: ['å®å®è¿˜æ²¡æœ‰æ·»åŠ çºªå¿µæ—¥å“¦~','ç‚¹å³ä¸‹è§’çš„+å·ï¼Œæ·»åŠ ç¬¬ä¸€ä¸ªçºªå¿µæ—¥å§ï¼']
+  };
+
+  function randomQuote(category){
+    const list = broQuotes[category] || broQuotes.home;
+    return list[Math.floor(Math.random()*list.length)];
+  }
+
+  // çš®è‚¤å’ŒèƒŒæ™¯
+  function applySkin(skinId){
+    const skin = skins.find(s=>s.id===skinId) || skins[0];
+    document.getElementById('mainBody').style.background = skin.bg;
+    appData.skins.active = skinId;
+    save();
+  }
+
+  function applyBgPhoto(){
+    const bg = document.getElementById('photoBg');
+    if(appData.bgPhoto){
+      bg.style.backgroundImage = `url(${appData.bgPhoto})`;
+      bg.classList.add('active');
+      if(appData.photoMode==='blur') bg.classList.add('blur'); else bg.classList.remove('blur');
+    }else{bg.classList.remove('active');}
+  }
+
+  function switchPage(pageId){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+pageId).classList.add('active');
+  }
+
+  // è®¡ç®—å¤©æ•°
+  function calcDays(eventDate, calendarType){
+    const today = new Date(); today.setHours(0,0,0,0);
+    const target = new Date(eventDate);
+    if(calendarType==='lunar'){
+      // å†œåŽ†æ—¥æœŸæ— æ³•ç²¾ç¡®è½¬æ¢ï¼Œç”¨é˜³åŽ†æ—¥æœŸä½œä¸ºè¿‘ä¼¼
+      target.setHours(0,0,0,0);
+    }
+    const diff = Math.floor((target.getTime() - today.getTime()) / 86400000);
+    return diff;
+  }
+  // ========== ä¸»é¡µæ¸²æŸ“ ==========
+function renderHome(){
+  const list = document.getElementById('eventList');
+  const empty = document.getElementById('emptyState');
+  
+  if(appData.events.length === 0){
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    document.getElementById('homeBroText').textContent = randomQuote('empty');
+    return;
+  }
+  
+  empty.classList.add('hidden');
+  
+  // æŽ’åºï¼šç½®é¡¶ä¼˜å…ˆï¼Œç„¶åŽæŒ‰æ—¥æœŸè¿œè¿‘
+  const sorted = [...appData.events].sort((a,b)=>{
+    if(a.pinned && !b.pinned) return -1;
+    if(!a.pinned && b.pinned) return 1;
+    const daysA = calcDays(a.date, a.calendarType);
+    const daysB = calcDays(b.date, b.calendarType);
+    return Math.abs(daysA) - Math.abs(daysB);
+  });
+
+  list.innerHTML = sorted.map(e=>{
+    const days = calcDays(e.date, e.calendarType);
+    const isNear = Math.abs(days) <= 7 && days >= 0;
+    const isPast = days < 0;
+    const iconMap = {love:'ðŸ’', birthday:'ðŸŽ‚', holiday:'ðŸŽ‰', custom:'ðŸ“'};
+    const tagClassMap = {love:'love', birthday:'birthday', holiday:'holiday', custom:'custom'};
+    const tagNameMap = {love:'çºªå¿µæ—¥', birthday:'ç”Ÿæ—¥', holiday:'èŠ‚æ—¥', custom:'è‡ªå®šä¹‰'};
+    
+    let daysText;
+    if(days === 0) daysText = 'ä»Šå¤©ï¼';
+    else if(days > 0) daysText = `${days}å¤©åŽ`;
+    else daysText = `${Math.abs(days)}å¤©å‰`;
+    
+    let pinIcon = e.pinned ? 'ðŸ“Œ ' : '';
+    
+    return `
+      <div class="event-card${isNear?' near':''}" data-id="${e.id}">
+        <div class="event-icon">${iconMap[e.category]}</div>
+        <div class="event-info">
+          <div class="event-name">${pinIcon}${e.name}<span class="tag ${tagClassMap[e.category]}">${tagNameMap[e.category]}</span></div>
+          <div class="event-date">${e.date}${e.calendarType==='lunar'?' (å†œåŽ†)':''}</div>
+        </div>
+        <div class="event-days ${isPast?'past':'future'}">${daysText}</div>
+      </div>
+    `;
+  }).join('');
+
+  // ç»‘å®šç‚¹å‡»äº‹ä»¶
+  list.querySelectorAll('.event-card').forEach(card=>{
+    card.addEventListener('click', function(){
+      const id = parseInt(this.dataset.id);
+      currentEventId = id;
+      renderDetail();
+      switchPage('detail');
+    });
+  });
+
+  document.getElementById('homeBroText').textContent = randomQuote('home');
+}
+
+// ========== è¯¦æƒ…é¡µæ¸²æŸ“ ==========
+function renderDetail(){
+  const event = appData.events.find(e=>e.id === currentEventId);
+  if(!event) return;
+  
+  const days = calcDays(event.date, event.calendarType);
+  const photoCard = document.getElementById('detailPhotoCard');
+  
+  // è®¾ç½®ç…§ç‰‡èƒŒæ™¯
+  if(event.photo){
+    photoCard.style.backgroundImage = `url(${event.photo})`;
+    photoCard.style.backgroundSize = 'cover';
+  } else {
+    const bgMap = {love:'linear-gradient(135deg,#fce4ec,#f8bbd0)', birthday:'linear-gradient(135deg,#fff3e0,#ffccbc)', holiday:'linear-gradient(135deg,#fffde0,#ffe082)', custom:'linear-gradient(135deg,#f3e5f5,#e1bee7)'};
+    photoCard.style.backgroundImage = bgMap[event.category] || bgMap.custom;
+    photoCard.style.backgroundSize = 'cover';
+  }
+  
+  let numberText, labelText;
+  if(days === 0){ numberText = 'ðŸŽ‰'; labelText = 'å°±æ˜¯ä»Šå¤©ï¼'; }
+  else if(days > 0){ numberText = days; labelText = 'å¤©åŽ'; }
+  else { numberText = Math.abs(days); labelText = 'å¤©å‰'; }
+  
+  document.getElementById('detailNumber').textContent = numberText;
+  document.getElementById('detailLabel').textContent = labelText;
+  document.getElementById('detailDateText').textContent = `${event.date}${event.calendarType==='lunar'?' (å†œåŽ†)':''} Â· ${event.name}`;
+  
+  // å“¥å“¥è¯è¯­
+  let quoteCategory = event.category;
+  if(days === 0) quoteCategory = event.category;
+  else if(days > 0 && days <= 7) quoteCategory = 'near';
+  document.getElementById('detailBroText').textContent = randomQuote(quoteCategory);
+}
+
+// ========== æ—¥è®°é¡µ ==========
+function renderDiary(){
+  const event = appData.events.find(e=>e.id === currentEventId);
+  if(!event) return;
+  document.getElementById('diaryTitle').textContent = event.name;
+  document.getElementById('diaryContent').value = event.diary || '';
+  document.getElementById('diaryBroText').textContent = randomQuote('diary');
+}
+// ========== çš®è‚¤å•†åº— ==========
+function renderShop(){
+  document.getElementById('shopCoinCount').textContent = appData.coins;
+  const list = document.getElementById('skinList');
+  list.innerHTML = skins.map(s=>{
+    const owned=appData.skins.owned.includes(s.id);
+    const active=appData.skins.active===s.id;
+    return`<div class="skin-card${active?' selected':''}${!owned?' locked':''}" style="background:${s.bg}" data-id="${s.id}"><div>${s.emoji}</div><div style="font-size:0.65rem">${s.name}</div><div style="font-size:0.6rem">${owned?(active?'ä½¿ç”¨ä¸­':'å·²æ‹¥æœ‰'):'ðŸª™'+s.price}</div></div>`;
+  }).join('');
+  list.onclick=function(e){
+    const el=e.target.closest('.skin-card');if(!el)return;
+    const id=el.dataset.id;const skin=skins.find(s=>s.id===id);if(!skin)return;
+    if(!appData.skins.owned.includes(id)){
+      if(appData.coins>=skin.price){appData.coins-=skin.price;appData.skins.owned.push(id);save();applySkin(id);renderShop();document.getElementById('shopBroText').textContent='çš®è‚¤å·²å…‘æ¢ï¼å¥½æ¼‚äº®~';}
+      else{document.getElementById('shopBroText').textContent='é‡‘å¸ä¸å¤Ÿå“¦ï¼Œæ·»åŠ çºªå¿µæ—¥å¯ä»¥èµšé‡‘å¸~';}
+    }else{applySkin(id);renderShop();document.getElementById('shopBroText').textContent='çš®è‚¤å·²åˆ‡æ¢ï¼';}
+  };
+}
+
+// ========== è®¾ç½®å¼¹çª— ==========
+function renderEffectList(){
+  const list = document.getElementById('effectList');
+  list.innerHTML = effects.map(e=>{
+    const selected = appData.clickEffect === e.id;
+    return `<span class="effect-option${selected?' selected':''}" data-id="${e.id}">${e.name}</span>`;
+  }).join('');
+  list.onclick = function(e){
+    const el = e.target.closest('.effect-option');
+    if(!el) return;
+    appData.clickEffect = el.dataset.id;
+    save();
+    renderEffectList();
+  };
+}
+
+function openSettings(){
+  document.getElementById('photoMode').value = appData.photoMode;
+  renderEffectList();
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+
+function closeSettings(){
+  document.getElementById('settingsModal').classList.add('hidden');
+}
+
+// ========== ç‚¹å‡»ç‰¹æ•ˆ ==========
+document.addEventListener('click',function(e){
+  if(e.target.closest('button')||e.target.closest('input')||e.target.closest('select')||e.target.closest('textarea')||e.target.closest('.modal-overlay')) return;
+  if(appData.clickEffect === 'none') return;
+  const eff = effects.find(ef=>ef.id===appData.clickEffect);
+  if(!eff) return;
+  const count = eff.type==='pattern' ? 8 : 12;
+  for(let i=0;i<count;i++){
+    const particle=document.createElement('div');
+    particle.className='click-particle';
+    const angle=(Math.PI*2*i)/count;
+    const distance=30+Math.random()*60;
+    particle.style.cssText=`
+      left:${e.clientX}px;top:${e.clientY}px;
+      font-size:${14+Math.random()*16}px;
+      --dx:${Math.cos(angle)*distance}px;--dy:${Math.sin(angle)*distance}px;
+      ${eff.type==='pattern'?'' : `width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;background:${eff.color==='random'?`hsl(${Math.random()*360},80%,60%)`:eff.color};border-radius:50%`}
+    `;
+    if(eff.type==='pattern') particle.textContent = eff.emoji;
+    document.body.appendChild(particle);
+    setTimeout(()=>particle.remove(),800);
+  }
+});
+// ========== 添加事件弹窗 ==========
+function openAddEvent(){
+  document.getElementById('eventNameInput').value = '';
+  document.getElementById('eventDateInput').value = new Date().toISOString().split('T')[0];
+  document.getElementById('eventCategory').value = 'love';
+  document.getElementById('calendarType').value = 'solar';
+  document.getElementById('addEventModal').classList.remove('hidden');
+}
+
+function closeAddEvent(){
+  document.getElementById('addEventModal').classList.add('hidden');
+}
+
+document.getElementById('saveEventBtn').addEventListener('click', function(){
+  const name = document.getElementById('eventNameInput').value.trim();
+  const date = document.getElementById('eventDateInput').value;
+  const category = document.getElementById('eventCategory').value;
+  const calendarType = document.getElementById('calendarType').value;
+  
+  if(!name){ alert('请输入事件名称'); return; }
+  if(!date){ alert('请选择日期'); return; }
+
+  const newEvent = {
+    id: Date.now(),
+    name: name,
+    date: date,
+    category: category,
+    calendarType: calendarType,
+    photo: null,
+    diary: '',
+    pinned: false,
+    created: new Date().toISOString()
+  };
+
+  appData.events.push(newEvent);
+  appData.coins += 5;
+  save();
+  closeAddEvent();
+  renderHome();
+});
+
+// ========== 事件照片 ==========
+document.getElementById('changePhotoBtn').addEventListener('click', function(){
+  const event = appData.events.find(e=>e.id === currentEventId);
+  if(!event) return;
+  
+  // 创建选择：拍照或相册
+  const choice = confirm('📷 拍照 = 确定\n🖼️ 相册 = 取消');
+  if(choice){
+    document.getElementById('eventPhotoInput').onchange = function(ev){
+      const file = ev.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        event.photo = e.target.result;
+        save();
+        renderDetail();
+      };
+      reader.readAsDataURL(file);
+    };
+    document.getElementById('eventPhotoInput').click();
+  } else {
+    document.getElementById('eventGalleryInput').onchange = function(ev){
+      const file = ev.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        event.photo = e.target.result;
+        save();
+        renderDetail();
+      };
+      reader.readAsDataURL(file);
+    };
+    document.getElementById('eventGalleryInput').click();
+  }
+});
+
+// ========== 删除事件 ==========
+document.getElementById('deleteEventBtn').addEventListener('click', function(){
+  if(!confirm('确定要删除这个事件吗？')) return;
+  appData.events = appData.events.filter(e=>e.id !== currentEventId);
+  save();
+  switchPage('home');
+  renderHome();
+});
+
+// ========== 日记保存 ==========
+document.getElementById('saveDiaryBtn').addEventListener('click', function(){
+  const event = appData.events.find(e=>e.id === currentEventId);
+  if(!event) return;
+  event.diary = document.getElementById('diaryContent').value;
+  save();
+  document.getElementById('diaryBroText').textContent = '日记已保存！这些回忆，哥哥帮你守着。';
+  setTimeout(()=>{ document.getElementById('diaryBroText').textContent = randomQuote('diary'); }, 2000);
+});
+// ========== 哥哥互动 ==========
+document.getElementById('broEmoji').addEventListener('click', function(e){
+  const heart=document.createElement('span');
+  heart.textContent=['💕','💖','💗','💝','✨'][Math.floor(Math.random()*5)];
+  heart.className='heart-particle';
+  const rect=this.getBoundingClientRect();
+  heart.style.left=(rect.left+rect.width/2-12)+'px';
+  heart.style.top=(rect.top-10)+'px';
+  document.body.appendChild(heart);
+  setTimeout(()=>heart.remove(),1500);
+  document.getElementById('homeBroText').textContent = randomQuote('home');
+});
+
+document.getElementById('detailBroEmoji').addEventListener('click', function(e){
+  const heart=document.createElement('span');
+  heart.textContent=['💕','💖','💗'][Math.floor(Math.random()*3)];
+  heart.className='heart-particle';
+  const rect=this.getBoundingClientRect();
+  heart.style.left=(rect.left+rect.width/2-12)+'px';
+  heart.style.top=(rect.top-10)+'px';
+  document.body.appendChild(heart);
+  setTimeout(()=>heart.remove(),1500);
+  const event = appData.events.find(e=>e.id === currentEventId);
+  document.getElementById('detailBroText').textContent = randomQuote(event?event.category:'love');
+});
+
+// ========== 页面切换按钮 ==========
+document.getElementById('addEventFAB').addEventListener('click', openAddEvent);
+document.getElementById('cancelEventBtn').addEventListener('click', closeAddEvent);
+document.getElementById('detailBackBtn').addEventListener('click', ()=>{switchPage('home');renderHome();});
+document.getElementById('diaryBackBtn').addEventListener('click', ()=>{switchPage('detail');renderDetail();});
+document.getElementById('diaryBtn').addEventListener('click', ()=>{renderDiary();switchPage('diary');});
+document.getElementById('goShopBtn').addEventListener('click', ()=>{switchPage('shop');renderShop();});
+document.getElementById('shopBackBtn').addEventListener('click', ()=>{switchPage('home');renderHome();});
+document.getElementById('addEventModal').addEventListener('click', function(e){if(e.target===this)closeAddEvent();});
+
+// ========== 设置弹窗控制 ==========
+document.getElementById('openSettingsBtn').addEventListener('click', function(e){e.stopPropagation();openSettings();});
+document.getElementById('closeSettingsBtn').addEventListener('click', function(e){e.stopPropagation();closeSettings();});
+document.getElementById('settingsModal').addEventListener('click', function(e){if(e.target===this)closeSettings();});
+document.getElementById('settingsModal').classList.add('hidden');
+
+// 照片模式
+document.getElementById('photoMode').addEventListener('change', function(){
+  appData.photoMode = this.value;
+  save();
+  applyBgPhoto();
+});
+
+// App背景照片
+document.getElementById('photoFromCamera').addEventListener('click', function(){
+  document.getElementById('bgPhotoInput').onchange = function(ev){
+    const file = ev.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e){ appData.bgPhoto = e.target.result; save(); applyBgPhoto(); };
+    reader.readAsDataURL(file);
+  };
+  document.getElementById('bgPhotoInput').click();
+});
+
+document.getElementById('photoFromGallery').addEventListener('click', function(){
+  document.getElementById('bgGalleryInput').onchange = function(ev){
+    const file = ev.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e){ appData.bgPhoto = e.target.result; save(); applyBgPhoto(); };
+    reader.readAsDataURL(file);
+  };
+  document.getElementById('bgGalleryInput').click();
+});
+
+document.getElementById('photoRemove').addEventListener('click', function(){
+  appData.bgPhoto = null; save(); applyBgPhoto();
+});
+  // ========== PWA ==========
+  const manifest={name:'宝宝纪念日',short_name:'纪念日',start_url:location.href,display:'standalone',background_color:'#fff5f9',theme_color:'#fff5f9',icons:[{src:"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="#ffd1e0"/><text y=".9em" font-size="70" text-anchor="middle" x="50">📅</text></svg>'),sizes:'100x100',type:'image/svg+xml'}]};
+  document.getElementById('pwaManifest').href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/json'}));
+
+  // ========== 启动 ==========
+  applySkin(appData.skins.active);
+  applyBgPhoto();
+  renderHome();
+})();
+</script>
+</body>
+</html>
