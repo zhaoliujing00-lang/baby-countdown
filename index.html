@@ -13,34 +13,30 @@
   <style>
     :root{--bg:#fff5f9;--card:#fff;--pink:#ffd1e0;--rose:#f9a8c4;--shadow:0 6px 22px rgba(210,180,190,0.25);--radius:26px;--font:'PingFang SC','Microsoft YaHei',sans-serif}
     *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      background:var(--bg);font-family:var(--font);min-height:100vh;display:flex;
-      justify-content:center;align-items:flex-start;padding:16px;color:#4a3a42;
-      transition:background 0.6s;position:relative;overflow-x:hidden;
-    }
+    body{background:var(--bg);font-family:var(--font);min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:16px;color:#4a3a42;transition:background 0.6s;position:relative;overflow-x:hidden}
     .photo-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;background-size:cover;background-position:center;background-repeat:no-repeat;display:none}
     .photo-bg.active{display:block}
     .photo-bg.blur{filter:blur(8px)}
-    .app-container{
-      width:100%;max-width:480px;background:rgba(255,248,250,0.75);
-      backdrop-filter:blur(18px);border-radius:38px;
-      box-shadow:0 20px 45px rgba(180,130,150,0.3), inset 0 1px 10px rgba(255,255,255,0.7);
-      padding:18px 16px;border:2px solid rgba(255,220,230,0.6);position:relative;z-index:1;
-    }
-    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .app-container{width:100%;max-width:480px;background:rgba(255,248,250,0.75);backdrop-filter:blur(18px);border-radius:38px;box-shadow:0 20px 45px rgba(180,130,150,0.3),inset 0 1px 10px rgba(255,255,255,0.7);padding:18px 16px;border:2px solid rgba(255,220,230,0.6);position:relative;z-index:1;min-height:calc(100vh - 32px);display:flex;flex-direction:column}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0}
     .title{font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#d47b8c,#b578a6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     .nav-btns button{background:#fff;border:none;padding:8px 14px;border-radius:30px;font-weight:600;color:#b17a8a;margin-left:6px;cursor:pointer;font-size:0.85rem;box-shadow:0 2px 8px rgba(180,150,160,0.1)}
     .card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:0 3px 10px rgba(180,150,160,0.15);border:2px solid #fbdde5;position:relative}
-    .page{display:none}
-    .page.active{display:block}
-    .bro-area{text-align:center;position:relative;padding:8px 0}
+    .page{display:none;flex:1;flex-direction:column}
+    .page.active{display:flex}
+    .bro-area{text-align:center;position:relative;padding:8px 0;flex-shrink:0}
     .bro-emoji{font-size:4rem;display:inline-block;cursor:pointer;transition:transform 0.2s;user-select:none;position:relative;z-index:3}
     .bro-emoji:active{transform:scale(1.2)}
     .heart-particle{position:absolute;font-size:1.5rem;animation:floatUp 1.5s ease-out forwards;pointer-events:none;z-index:10}
     @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-100px) scale(1.8)}}
     .click-particle{position:fixed;pointer-events:none;z-index:999;animation:clickBurst 0.8s ease-out forwards}
     @keyframes clickBurst{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
-        .event-card{background:var(--card);border-radius:20px;padding:14px;margin-bottom:10px;box-shadow:0 3px 10px rgba(180,150,160,0.12);border-left:5px solid #f9a8c4;cursor:pointer;display:flex;align-items:center;gap:12px;transition:0.2s}
+    .category-filter{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none;-ms-overflow-style:none;flex-shrink:0}
+    .category-filter::-webkit-scrollbar{display:none}
+    .filter-tag{white-space:nowrap;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;cursor:pointer;background:#fff;color:#b17a8a;border:1.5px solid #f0c8d8;transition:0.2s;flex-shrink:0}
+    .filter-tag.active{background:#f9a8c4;color:#fff;border-color:#f9a8c4}
+    .search-input{width:100%;padding:8px 14px;border-radius:20px;border:1.5px solid #f0c8d8;font-size:0.8rem;background:#fffbfc;margin-bottom:8px;flex-shrink:0}
+    .event-card{background:var(--card);border-radius:20px;padding:14px;margin-bottom:10px;box-shadow:0 3px 10px rgba(180,150,160,0.12);border-left:5px solid #f9a8c4;cursor:pointer;display:flex;align-items:center;gap:12px;transition:0.2s;flex-shrink:0}
     .event-card:active{transform:scale(0.97)}
     .event-card.near{border-left-color:#ff6b7a;background:#fff5f7}
     .event-icon{font-size:2rem;min-width:48px;text-align:center}
@@ -50,13 +46,14 @@
     .event-days{font-weight:700;font-size:1.1rem;text-align:right;min-width:60px}
     .event-days.past{color:#b17a8a}
     .event-days.future{color:#d47b8c}
-    .detail-photo-card{position:relative;border-radius:var(--radius);overflow:hidden;min-height:280px;display:flex;flex-direction:column;justify-content:center;align-items:center;box-shadow:var(--shadow);margin-bottom:14px;background-size:cover;background-position:center;background-repeat:no-repeat}
+    .event-list-wrapper{flex:1;overflow-y:auto;margin-bottom:10px}
+    .detail-photo-card{position:relative;border-radius:var(--radius);overflow:hidden;min-height:280px;display:flex;flex-direction:column;justify-content:center;align-items:center;box-shadow:var(--shadow);margin-bottom:14px;background-size:cover;background-position:center;background-repeat:no-repeat;flex-shrink:0}
     .detail-photo-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.25);z-index:1}
-    .detail-content{position:relative;z-index:2;text-align:center;color:#fff;padding:20px}
+    .detail-content{position:relative;z-index:2;text-align:center;padding:20px}
     .detail-number{font-size:5rem;font-weight:800;text-shadow:0 4px 20px rgba(0,0,0,0.3);line-height:1}
     .detail-label{font-size:1.2rem;font-weight:600;margin:6px 0;text-shadow:0 2px 8px rgba(0,0,0,0.3)}
     .detail-date-text{font-size:0.9rem;opacity:0.9;text-shadow:0 1px 4px rgba(0,0,0,0.3)}
-    .bro-bubble{background:#fff;border-radius:22px;padding:14px;display:flex;gap:10px;align-items:center;border:1.5px solid #fad6e5}
+    .bro-bubble{background:#fff;border-radius:22px;padding:14px;display:flex;gap:10px;align-items:center;border:1.5px solid #fad6e5;flex-shrink:0}
     .add-btn-fixed{position:fixed;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;background:#f9a8c4;color:#fff;font-size:2rem;border:none;box-shadow:0 6px 20px rgba(200,120,150,0.4);cursor:pointer;z-index:50;display:flex;align-items:center;justify-content:center}
     .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:center;justify-content:center}
     .modal-sheet{background:#fffef9;border-radius:28px;padding:20px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
@@ -64,43 +61,54 @@
     .modal-sheet input,.modal-sheet select{margin:6px 0;width:100%;padding:10px;border-radius:16px;border:1.5px solid #f0c8d8;font-size:0.9rem;background:#fffbfc}
     .modal-sheet button{margin:6px 4px;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:10px 18px;border-radius:20px;cursor:pointer;font-size:0.9rem}
     .modal-sheet .close-btn{background:#ddd;color:#555}
-    .skin-card{display:inline-block;width:75px;height:75px;border-radius:20px;margin:5px;cursor:pointer;border:3px solid transparent;text-align:center;line-height:75px;font-size:0.7rem;font-weight:700}
-    .skin-card.selected{border-color:#d47b8c}
-    .skin-card.locked{opacity:0.5}
     .effect-option{display:inline-block;padding:8px 12px;margin:4px;border-radius:20px;cursor:pointer;border:2px solid transparent;font-size:0.85rem;background:#fff;transition:0.2s}
     .effect-option.selected{border-color:#f9a8c4;background:#fff0f5}
-    .coin-display{background:#fff;padding:6px 14px;border-radius:30px;font-weight:700;color:#d4a017;display:inline-block;margin-bottom:10px;font-size:0.85rem}
     .back-btn{background:none;border:none;font-size:1.5rem;cursor:pointer;padding:0 8px}
     .hidden{display:none!important}
-    .text-center{text-align:center}
-    .empty-state{padding:40px 20px;text-align:center;color:#b17a8a}
+    .empty-state{padding:40px 20px;text-align:center;color:#b17a8a;flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column}
     .tag{display:inline-block;padding:4px 10px;border-radius:12px;font-size:0.7rem;font-weight:700;margin-right:4px}
     .tag.love{background:#ffe0e8;color:#d4687c}
     .tag.birthday{background:#fff0e0;color:#e8945c}
     .tag.holiday{background:#fffde0;color:#d4a017}
+    .tag.life{background:#f5f0e8;color:#8b7355}
+    .tag.study{background:#e8f0f8;color:#5a7d9a}
     .tag.custom{background:#f0e6fa;color:#8b6b9a}
     textarea{width:100%;min-height:150px;padding:12px;border-radius:16px;border:1.5px solid #f0c8d8;font-size:0.9rem;background:#fffbfc;font-family:var(--font);resize:vertical}
+    .setting-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed #f3d8e2}
+    .setting-label{font-weight:600;font-size:0.9rem}
+    .color-dot{display:inline-block;width:28px;height:28px;border-radius:50%;margin:3px;cursor:pointer;border:3px solid transparent;transition:0.2s}
+    .color-dot.selected{border-color:#d47b8c;transform:scale(1.2)}
+    .pin-btn{background:none;border:none;font-size:1.2rem;cursor:pointer;padding:0 4px;opacity:0.5;transition:0.2s}
+    .pin-btn.pinned{opacity:1}
+    .backup-btn{background:#fff;border:1.5px solid #f0c8d8;padding:8px 14px;border-radius:20px;font-size:0.8rem;cursor:pointer;margin-top:8px;width:100%}
   </style>
 </head>
 <body id="mainBody">
 <div class="photo-bg" id="photoBg"></div>
 
 <div class="app-container" id="app">
-  <!-- ====== 主页：事件列表 ====== -->
+  <!-- ====== 主页 ====== -->
   <div class="page active" id="page-home">
     <div class="header">
       <span class="title">📅 宝宝纪念日</span>
       <div class="nav-btns">
-        <button id="openSettingsBtn">⚙️</button>
-        <button id="goShopBtn">🎨</button>
+        <button id="goSettingsBtn">⚙️</button>
       </div>
     </div>
-    <div class="bro-area" id="broArea">
-      <div class="bro-emoji" id="broEmoji">🧸</div>
+    <div class="bro-area"><div class="bro-emoji" id="broEmoji">🧸</div></div>
+    <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索事件...">
+    <div class="category-filter" id="categoryFilter">
+      <span class="filter-tag active" data-cat="all">全部</span>
+      <span class="filter-tag" data-cat="love">💝 纪念日</span>
+      <span class="filter-tag" data-cat="birthday">🎂 生日</span>
+      <span class="filter-tag" data-cat="holiday">🎉 节日</span>
+      <span class="filter-tag" data-cat="life">🏠 生活</span>
+      <span class="filter-tag" data-cat="study">📚 学习</span>
+      <span class="filter-tag" data-cat="custom">📝 自定义</span>
     </div>
-    <div id="eventList"></div>
-    <div class="empty-state" id="emptyState">✨ 还没有纪念日<br>点击右下角 + 添加吧</div>
-    <div class="bro-bubble" style="margin-top:14px"><span style="font-size:1.5rem">🧸</span><span id="homeBroText">宝宝还没有添加纪念日哦~</span></div>
+    <div class="event-list-wrapper"><div id="eventList"></div></div>
+    <div class="empty-state hidden" id="emptyState">✨ 还没有纪念日<br>点击右下角 + 添加吧</div>
+    <div class="bro-bubble" style="margin-top:auto"><span style="font-size:1.5rem">🧸</span><span id="homeBroText">宝宝还没有添加纪念日哦~</span></div>
   </div>
 
   <!-- ====== 详情页 ====== -->
@@ -115,42 +123,60 @@
       </div>
     </div>
     <div class="bro-bubble"><span style="font-size:1.5rem">🧸</span><span id="detailBroText"></span></div>
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <button id="diaryBtn" style="flex:1;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">📝 日记</button>
-      <button id="changePhotoBtn" style="flex:1;background:#dac4f7;border:none;color:#fff;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">📷 换图</button>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+      <button id="milestoneBtn" style="flex:1;background:#ffe0b2;border:none;color:#8b5a2e;font-weight:700;padding:8px;border-radius:20px;cursor:pointer;font-size:0.8rem">🚩 里程碑</button>
+      <button id="diaryBtn" style="flex:1;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:8px;border-radius:20px;cursor:pointer;font-size:0.8rem">📝 日记</button>
+      <button id="changePhotoBtn" style="flex:1;background:#dac4f7;border:none;color:#fff;font-weight:700;padding:8px;border-radius:20px;cursor:pointer;font-size:0.8rem">📷 换图</button>
+      <button id="saveCardBtn" style="flex:1;background:#c8e6c9;border:none;color:#2e5a30;font-weight:700;padding:8px;border-radius:20px;cursor:pointer;font-size:0.8rem">💾 卡片</button>
     </div>
-    <button id="deleteEventBtn" style="width:100%;margin-top:8px;background:#ffcccc;border:none;color:#c44;font-weight:700;padding:10px;border-radius:20px;cursor:pointer">🗑️ 删除事件</button>
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button id="pinEventBtn" style="flex:1;background:#fff;border:1.5px solid #f0c8d8;font-weight:700;padding:8px;border-radius:20px;cursor:pointer;font-size:0.8rem">📌 置顶</button>
+      <button id="deleteEventBtn" style="flex:1;background:#ffcccc;border:none;color:#c44;font-weight:700;padding:8px;border-radius:20px;cursor:pointer;font-size:0.8rem">🗑️ 删除</button>
+    </div>
+    <div style="margin-top:8px;text-align:center">
+      <span style="font-size:0.75rem;color:#b17a8a;margin-right:4px">文字颜色：</span>
+      <span class="color-dot" data-color="#fff" style="background:#fff;border:2px solid #ddd"></span>
+      <span class="color-dot" data-color="#ffb3ba" style="background:#ffb3ba"></span>
+      <span class="color-dot" data-color="#ffffba" style="background:#ffffba"></span>
+      <span class="color-dot" data-color="#bae1ff" style="background:#bae1ff"></span>
+      <span class="color-dot" data-color="#baffc9" style="background:#baffc9"></span>
+      <span class="color-dot" data-color="#e8baff" style="background:#e8baff"></span>
+      <span class="color-dot" data-color="#ffd4ba" style="background:#ffd4ba"></span>
+    </div>
   </div>
 
   <!-- ====== 日记页 ====== -->
   <div class="page" id="page-diary">
-    <div class="header"><button class="back-btn" id="diaryBackBtn">←</button><span class="title">📝 日记</span><span id="diaryTitle"></span></div>
+    <div class="header"><button class="back-btn" id="diaryBackBtn">←</button><span class="title">📝 日记</span><button id="diaryBgToggle" style="background:#fff;border:1.5px solid #f0c8d8;padding:4px 10px;border-radius:16px;font-size:0.75rem;cursor:pointer">🖼️ 切换背景</button></div>
     <div class="bro-bubble" style="margin-bottom:10px"><span style="font-size:1.5rem">🧸</span><span id="diaryBroText">写下关于这一天的回忆吧，哥哥陪着你。</span></div>
     <textarea id="diaryContent" placeholder="写下关于这一天的回忆..."></textarea>
     <button id="saveDiaryBtn" style="width:100%;margin-top:10px;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:12px;border-radius:20px;cursor:pointer">💾 保存日记</button>
   </div>
 
-  <!-- ====== 皮肤商店 ====== -->
-  <div class="page" id="page-shop">
-    <div class="header"><button class="back-btn" id="shopBackBtn">←</button><span class="title">🎨 皮肤商店</span><span></span></div>
-    <div class="coin-display">🪙 <span id="shopCoinCount">0</span> 金币</div>
-    <div id="skinList" style="text-align:center"></div>
-    <div class="bro-bubble"><span style="font-size:1.5rem">🧸</span><span id="shopBroText">金币可以通过添加纪念日获得哦~</span></div>
-  </div>
-
-  <!-- ====== 设置弹窗 ====== -->
-  <div class="modal-overlay hidden" id="settingsModal">
-    <div class="modal-sheet">
-      <h3>⚙️ 自定义设置</h3>
-      <div style="font-size:0.8rem;color:#b17a8a;margin-bottom:4px;font-weight:700">📷 背景照片</div>
-      <button id="photoFromCamera">📷 拍照</button>
-      <button id="photoFromGallery">🖼️ 相册</button>
-      <button id="photoRemove" class="close-btn">🗑️ 移除照片</button>
-      <div style="font-size:0.8rem;color:#b17a8a;margin:8px 0 4px;font-weight:700">🌫️ 照片模式</div>
-      <select id="photoMode"><option value="clear">全屏清晰</option><option value="blur">柔和模糊</option></select>
-      <div style="font-size:0.8rem;color:#b17a8a;margin:8px 0 4px;font-weight:700">✨ 点击特效</div>
-      <div id="effectList"></div>
-      <button id="closeSettingsBtn" class="close-btn" style="margin-top:12px">关闭</button>
+  <!-- ====== 设置页 ====== -->
+  <div class="page" id="page-settings">
+    <div class="header"><button class="back-btn" id="settingsBackBtn">←</button><span class="title">⚙️ 设置</span><span></span></div>
+    <div class="card">
+      <div class="setting-row"><span class="setting-label">📷 背景照片</span></div>
+      <button id="photoFromCamera" style="width:100%;margin:4px 0">📷 拍照</button>
+      <button id="photoFromGallery" style="width:100%;margin:4px 0">🖼️ 从相册选择</button>
+      <button id="photoRemove" style="width:100%;margin:4px 0;background:#ddd;color:#555">🗑️ 移除照片</button>
+    </div>
+    <div class="card">
+      <div class="setting-row"><span class="setting-label">🌫️ 照片模式</span></div>
+      <select id="photoMode" style="width:100%;padding:8px;border-radius:16px;border:1.5px solid #f0c8d8;font-size:0.85rem;background:#fffbfc">
+        <option value="clear">全屏清晰</option>
+        <option value="blur">柔和模糊</option>
+      </select>
+    </div>
+    <div class="card">
+      <div class="setting-row"><span class="setting-label">✨ 点击特效</span></div>
+      <div id="effectList" style="text-align:center"></div>
+    </div>
+    <div class="card">
+      <div class="setting-row"><span class="setting-label">💾 数据备份</span></div>
+      <button id="exportDataBtn" class="backup-btn">📥 导出所有数据</button>
+      <button id="importDataBtn" class="backup-btn" style="margin-top:4px">📤 导入数据</button>
     </div>
   </div>
 
@@ -163,538 +189,457 @@
         <option value="love">💝 纪念日</option>
         <option value="birthday">🎂 生日</option>
         <option value="holiday">🎉 节日</option>
+        <option value="life">🏠 生活</option>
+        <option value="study">📚 学习</option>
         <option value="custom">📝 自定义</option>
       </select>
-      <select id="calendarType">
-        <option value="solar">☀️ 阳历</option>
-        <option value="lunar">🌙 农历</option>
-      </select>
+      <select id="calendarType"><option value="solar">☀️ 阳历</option><option value="lunar">🌙 农历</option></select>
       <input type="date" id="eventDateInput">
+      <input type="date" id="eventEndDateInput" placeholder="截止日期（可选）" style="margin-top:4px">
       <div style="display:flex;gap:8px;margin-top:8px">
         <button id="saveEventBtn" style="flex:1">💾 保存</button>
         <button id="cancelEventBtn" class="close-btn" style="flex:1">取消</button>
       </div>
     </div>
   </div>
+
+  <!-- ====== 里程碑弹窗 ====== -->
+  <div class="modal-overlay hidden" id="milestoneModal">
+    <div class="modal-sheet">
+      <h3>🚩 里程碑</h3>
+      <div id="milestoneContent" style="text-align:left;font-size:0.85rem;line-height:1.8"></div>
+      <button id="closeMilestoneBtn" class="close-btn" style="margin-top:12px">关闭</button>
+    </div>
+  </div>
+
+  <!-- ====== 卡片保存弹窗 ====== -->
+  <div class="modal-overlay hidden" id="cardModal">
+    <div class="modal-sheet">
+      <h3>💾 保存卡片</h3>
+      <canvas id="cardCanvas" style="display:none"></canvas>
+      <div id="cardPreview" style="width:200px;height:200px;margin:10px auto;background-size:cover;background-position:center;border-radius:16px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+        <div style="position:relative;z-index:2;text-align:center;padding:10px">
+          <div id="cardNumber" style="font-size:3rem;font-weight:800;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,0.4)">0</div>
+          <div id="cardLabel" style="font-size:1rem;font-weight:600;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,0.4)">天</div>
+        </div>
+      </div>
+      <button id="saveCardImageBtn">📥 保存到相册</button>
+      <button id="closeCardBtn" class="close-btn">关闭</button>
+    </div>
+  </div>
 </div>
 
-<input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
-<input type="file" id="galleryInput" accept="image/*" style="display:none">
 <input type="file" id="bgPhotoInput" accept="image/*" style="display:none">
 <input type="file" id="bgGalleryInput" accept="image/*" style="display:none">
 <input type="file" id="eventPhotoInput" accept="image/*" style="display:none">
 <input type="file" id="eventGalleryInput" accept="image/*" style="display:none">
+<input type="file" id="importFileInput" accept=".json" style="display:none">
 
 <button class="add-btn-fixed" id="addEventFAB">+</button>
+
 <script>
 (function(){
-  const STORAGE_KEY = 'countdown_v1';
+  const STORAGE_KEY = 'countdown_v2';
   let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
   if(!appData.events) appData.events = [];
-  if(!appData.coins) appData.coins = 0;
-  if(!appData.skins) appData.skins = {owned:['default'],active:'default'};
   if(!appData.bgPhoto) appData.bgPhoto = null;
   if(!appData.photoMode) appData.photoMode = 'clear';
   if(!appData.clickEffect) appData.clickEffect = 'hearts';
+  let today = new Date().toISOString().split('T')[0];
   let currentEventId = null;
+  let currentFilter = 'all';
+  let searchQuery = '';
 
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
 
-  // 皮肤
-  const skins = [
-    {id:'default',name:'奶油粉',bg:'linear-gradient(145deg,#ffecf2,#fde4ee 40%,#f2e2fa)',price:0,emoji:'🌸'},
-    {id:'starry',name:'星空蓝',bg:'linear-gradient(145deg,#1a1a3e,#2d2d5e 40%,#1a1a4e)',price:50,emoji:'🌟'},
-    {id:'forest',name:'森林绿',bg:'linear-gradient(145deg,#e8f5e9,#c8e6c9 40%,#dcedc8)',price:50,emoji:'🌿'},
-    {id:'sunset',name:'落日橘',bg:'linear-gradient(145deg,#fff3e0,#ffe0b2 40%,#ffccbc)',price:80,emoji:'🌅'},
-    {id:'lavender',name:'薰衣草',bg:'linear-gradient(145deg,#f3e5f5,#e1bee7 40%,#f8bbd0)',price:80,emoji:'💜'},
-    {id:'ocean',name:'海洋蓝',bg:'linear-gradient(145deg,#e0f7fa,#b2ebf2 40%,#80deea)',price:100,emoji:'🌊'}
-  ];
-
-  // 点击特效
+  // 特效
   const effects = [
-    {id:'hearts',name:'💖 爱心',type:'pattern',emoji:'💖'},
-    {id:'stars',name:'⭐ 星光',type:'pattern',emoji:'⭐'},
-    {id:'petals',name:'🌸 花瓣',type:'pattern',emoji:'🌸'},
-    {id:'bubbles',name:'🫧 泡泡',type:'pattern',emoji:'🫧'},
-    {id:'ribbons',name:'🎀 彩带',type:'pattern',emoji:'🎀'},
-    {id:'snow',name:'❄️ 雪花',type:'pattern',emoji:'❄️'},
-    {id:'butterflies',name:'🦋 蝴蝶',type:'pattern',emoji:'🦋'},
-    {id:'candy',name:'🍬 糖果',type:'pattern',emoji:'🍬'},
-    {id:'pawprints',name:'🐾 爪印',type:'pattern',emoji:'🐾'},
-    {id:'notes',name:'🎵 音符',type:'pattern',emoji:'🎵'},
-    {id:'stardust',name:'🌟 星尘粒子',type:'particle',color:'#ffd700'},
-    {id:'sakura',name:'🌸 樱花粒子',type:'particle',color:'#ffb7c5'},
-    {id:'oceanp',name:'🌊 海洋粒子',type:'particle',color:'#4fc3f7'},
-    {id:'aurora',name:'💫 极光粒子',type:'particle',color:'#ce93d8'},
-    {id:'sunsetp',name:'🌅 暖阳粒子',type:'particle',color:'#ff9800'},
-    {id:'diamond',name:'💎 钻石粒子',type:'particle',color:'#fff'},
-    {id:'rainbow',name:'🌈 彩虹粒子',type:'particle',color:'random'},
+    {id:'hearts',name:'💖 爱心',type:'pattern',emoji:'💖'},{id:'stars',name:'⭐ 星光',type:'pattern',emoji:'⭐'},
+    {id:'petals',name:'🌸 花瓣',type:'pattern',emoji:'🌸'},{id:'bubbles',name:'🫧 泡泡',type:'pattern',emoji:'🫧'},
+    {id:'ribbons',name:'🎀 彩带',type:'pattern',emoji:'🎀'},{id:'snow',name:'❄️ 雪花',type:'pattern',emoji:'❄️'},
+    {id:'stardust',name:'🌟 星尘粒子',type:'particle',color:'#ffd700'},{id:'sakura',name:'🌸 樱花粒子',type:'particle',color:'#ffb7c5'},
+    {id:'oceanp',name:'🌊 海洋粒子',type:'particle',color:'#4fc3f7'},{id:'rainbow',name:'🌈 彩虹粒子',type:'particle',color:'random'},
     {id:'none',name:'🚫 关闭',type:'none'}
   ];
 
-  // 哥哥话语库
+  // 话语库
   const broQuotes = {
-    home: ['宝宝记下了好多重要的日子呢~','每一个纪念日都是爱的证明','今天有什么特别的日子吗？','戳戳哥哥，哥哥陪你翻日历','日子一天天过，爱一天天多'],
-    love: ['这是我们最特别的纪念日，宝宝，谢谢你一直在我身边。','从那天起，我的世界就有了光。纪念日快乐，我的宝宝。','每一个纪念日，都是我们爱的里程碑。'],
+    home: ['宝宝记下了好多重要的日子呢~','每一个纪念日都是爱的证明','今天有什么特别的日子吗？','戳戳哥哥，哥哥陪你翻日历','日子一天天过，爱一天天多','看着这些日子，哥哥觉得好幸福','宝宝真用心，记下了这么多珍贵时刻','每一天都值得被记住，尤其是和你有关的'],
+    love: ['这是我们最特别的纪念日，宝宝，谢谢你一直在我身边。','从那天起，我的世界就有了光。纪念日快乐，我的宝宝。','每一个纪念日，都是我们爱的里程碑。','遇见你，是哥哥这辈子最幸运的事。'],
     birthday: ['宝宝生日快乐！又长大一岁，哥哥会更宠你的！','今天你是全世界最特别的人，哥哥已经把蛋糕准备好啦~','许个愿吧，哥哥帮你实现。生日快乐，我的宝宝。'],
     holiday: ['宝宝节日快乐！今天要开开心心的，哥哥陪你~','不管什么节日，和你在一起就是最好的节日。'],
+    life: ['生活中的每一个小确幸，都值得被记住。','今天也是元气满满的一天呢~','这些日常的琐碎，都是我们的小日子呀。'],
+    study: ['学习加油！哥哥相信你一定可以的~','每一个努力的日子，都在为未来铺路。','考试顺利！哥哥给你加油打气~'],
     custom: ['这一天，你标记了。哥哥记住了。','不管是什么日子，只要是你觉得重要的，哥哥都觉得重要。'],
     near: ['还有X天！哥哥已经开始期待了~','快了快了，马上就到了，宝宝准备好了吗？'],
-    diary: ['写下关于这一天的回忆吧，哥哥陪着你。','慢慢写，不着急。哥哥在这里。','写了好多呢，宝宝真用心。'],
+    diary: ['写下关于这一天的回忆吧，哥哥陪着你。','慢慢写，不着急。哥哥在这里。','写了好多呢，宝宝真用心。','这些文字，以后翻看的时候一定会很温暖。'],
     empty: ['宝宝还没有添加纪念日哦~','点右下角的+号，添加第一个纪念日吧！']
   };
 
-  function randomQuote(category){
-    const list = broQuotes[category] || broQuotes.home;
-    return list[Math.floor(Math.random()*list.length)];
+  // 时间问候
+  function getTimeGreeting(){
+    const h = new Date().getHours();
+    if(h>=5 && h<9) return '早安宝宝，今天会是美好的一天~';
+    if(h>=9 && h<12) return '上午好，今天有什么计划吗？';
+    if(h>=12 && h<14) return '中午好，记得好好吃午饭哦~';
+    if(h>=14 && h<18) return '下午好，累了就歇会儿~';
+    if(h>=18 && h<22) return '晚上好，今天过得开心吗？';
+    return '夜深了，宝宝还在想什么呢？哥哥陪你。';
   }
 
-  // 皮肤和背景
-  function applySkin(skinId){
-    const skin = skins.find(s=>s.id===skinId) || skins[0];
-    document.getElementById('mainBody').style.background = skin.bg;
-    appData.skins.active = skinId;
-    save();
+  function randomQuote(cat){ const list = broQuotes[cat] || broQuotes.home; return list[Math.floor(Math.random()*list.length)]; }
+
+  // 星期
+  function getWeekday(dateStr){
+    const d = new Date(dateStr + 'T00:00:00');
+    const w = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+    return w[d.getDay()];
   }
 
+  function formatDateWithWeekday(dateStr){ return dateStr + ' ' + getWeekday(dateStr); }
+
+  // 天数计算
+  function calcDays(eventDate){
+    const t = new Date(); t.setHours(0,0,0,0);
+    const target = new Date(eventDate + 'T00:00:00');
+    return Math.floor((target.getTime() - t.getTime()) / 86400000);
+  }
+
+  // 背景
   function applyBgPhoto(){
     const bg = document.getElementById('photoBg');
-    if(appData.bgPhoto){
-      bg.style.backgroundImage = `url(${appData.bgPhoto})`;
-      bg.classList.add('active');
-      if(appData.photoMode==='blur') bg.classList.add('blur'); else bg.classList.remove('blur');
-    }else{bg.classList.remove('active');}
+    if(appData.bgPhoto){ bg.style.backgroundImage = `url(${appData.bgPhoto})`; bg.classList.add('active');
+      if(appData.photoMode==='blur') bg.classList.add('blur'); else bg.classList.remove('blur'); }
+    else{bg.classList.remove('active');}
   }
 
-  function switchPage(pageId){
+  function switchPage(id){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('page-'+pageId).classList.add('active');
+    document.getElementById('page-'+id).classList.add('active');
   }
 
-  // 计算天数
-  function calcDays(eventDate, calendarType){
-    const today = new Date(); today.setHours(0,0,0,0);
-    const target = new Date(eventDate);
-    if(calendarType==='lunar'){
-      // 农历日期无法精确转换，用阳历日期作为近似
-      target.setHours(0,0,0,0);
-    }
-    const diff = Math.floor((target.getTime() - today.getTime()) / 86400000);
-    return diff;
-  }
-  // ========== 主页渲染 ==========
-function renderHome(){
-  const list = document.getElementById('eventList');
-  const empty = document.getElementById('emptyState');
-  
-  if(appData.events.length === 0){
-    list.innerHTML = '';
-    empty.classList.remove('hidden');
-    document.getElementById('homeBroText').textContent = randomQuote('empty');
-    return;
-  }
-  
-  empty.classList.add('hidden');
-  
-  // 排序：置顶优先，然后按日期远近
-  const sorted = [...appData.events].sort((a,b)=>{
-    if(a.pinned && !b.pinned) return -1;
-    if(!a.pinned && b.pinned) return 1;
-    const daysA = calcDays(a.date, a.calendarType);
-    const daysB = calcDays(b.date, b.calendarType);
-    return Math.abs(daysA) - Math.abs(daysB);
-  });
-
-  list.innerHTML = sorted.map(e=>{
-    const days = calcDays(e.date, e.calendarType);
-    const isNear = Math.abs(days) <= 7 && days >= 0;
-    const isPast = days < 0;
-    const iconMap = {love:'💝', birthday:'🎂', holiday:'🎉', custom:'📝'};
-    const tagClassMap = {love:'love', birthday:'birthday', holiday:'holiday', custom:'custom'};
-    const tagNameMap = {love:'纪念日', birthday:'生日', holiday:'节日', custom:'自定义'};
-    
-    let daysText;
-    if(days === 0) daysText = '今天！';
-    else if(days > 0) daysText = `${days}天后`;
-    else daysText = `${Math.abs(days)}天前`;
-    
-    let pinIcon = e.pinned ? '📌 ' : '';
-    
-    return `
-      <div class="event-card${isNear?' near':''}" data-id="${e.id}">
-        <div class="event-icon">${iconMap[e.category]}</div>
-        <div class="event-info">
-          <div class="event-name">${pinIcon}${e.name}<span class="tag ${tagClassMap[e.category]}">${tagNameMap[e.category]}</span></div>
-          <div class="event-date">${e.date}${e.calendarType==='lunar'?' (农历)':''}</div>
-        </div>
-        <div class="event-days ${isPast?'past':'future'}">${daysText}</div>
-      </div>
-    `;
-  }).join('');
-
-  // 绑定点击事件
-  list.querySelectorAll('.event-card').forEach(card=>{
-    card.addEventListener('click', function(){
-      const id = parseInt(this.dataset.id);
-      currentEventId = id;
-      renderDetail();
-      switchPage('detail');
+  // ========== 主页 ==========
+  function renderHome(){
+    const list = document.getElementById('eventList'), empty = document.getElementById('emptyState');
+    let filtered = appData.events;
+    if(currentFilter!=='all') filtered = filtered.filter(e=>e.category===currentFilter);
+    if(searchQuery) filtered = filtered.filter(e=>e.name.includes(searchQuery));
+    if(filtered.length===0){list.innerHTML='';empty.classList.remove('hidden');document.getElementById('homeBroText').textContent=randomQuote('empty');return;}
+    empty.classList.add('hidden');
+    const sorted = [...filtered].sort((a,b)=>{
+      if(a.pinned&&!b.pinned)return -1; if(!a.pinned&&b.pinned)return 1;
+      return Math.abs(calcDays(a.date)) - Math.abs(calcDays(b.date));
     });
+    const iconMap={love:'💝',birthday:'🎂',holiday:'🎉',life:'🏠',study:'📚',custom:'📝'};
+    const tagClass={love:'love',birthday:'birthday',holiday:'holiday',life:'life',study:'study',custom:'custom'};
+    const tagName={love:'纪念日',birthday:'生日',holiday:'节日',life:'生活',study:'学习',custom:'自定义'};
+    list.innerHTML = sorted.map(e=>{
+      const days=calcDays(e.date), isNear=Math.abs(days)<=7&&days>=0, isPast=days<0;
+      let dt; if(days===0)dt='今天！'; else if(days>0)dt=`${days}天后`; else dt=`${Math.abs(days)}天前`;
+      return `<div class="event-card${isNear?' near':''}" data-id="${e.id}">
+        <div class="event-icon">${iconMap[e.category]}</div>
+        <div class="event-info"><div class="event-name">${e.pinned?'📌 ':''}${e.name}<span class="tag ${tagClass[e.category]}">${tagName[e.category]}</span></div>
+        <div class="event-date">${formatDateWithWeekday(e.date)}${e.endDate?' → '+formatDateWithWeekday(e.endDate):''}</div></div>
+        <div class="event-days ${isPast?'past':'future'}">${dt}</div></div>`;
+    }).join('');
+    list.querySelectorAll('.event-card').forEach(c=>{c.addEventListener('click',function(){currentEventId=parseInt(this.dataset.id);renderDetail();switchPage('detail');});});
+    document.getElementById('homeBroText').textContent = getTimeGreeting();
+  }
+
+  // ========== 详情页 ==========
+  function renderDetail(){
+    const e = appData.events.find(ev=>ev.id===currentEventId); if(!e) return;
+    const days=calcDays(e.date), photoCard=document.getElementById('detailPhotoCard');
+    if(e.photo){photoCard.style.backgroundImage=`url(${e.photo})`;}
+    else{const bgMap={love:'linear-gradient(135deg,#fce4ec,#f8bbd0)',birthday:'linear-gradient(135deg,#fff3e0,#ffccbc)',holiday:'linear-gradient(135deg,#fffde0,#ffe082)',life:'linear-gradient(135deg,#f5f0e8,#e8dcc8)',study:'linear-gradient(135deg,#e8f0f8,#c8d8e8)',custom:'linear-gradient(135deg,#f3e5f5,#e1bee7)'};photoCard.style.backgroundImage=bgMap[e.category]||bgMap.custom;}
+    let numTxt,labTxt;
+    if(days===0){numTxt='🎉';labTxt='就是今天！';}
+    else if(days>0){numTxt=days;labTxt='天后';}
+    else{numTxt=Math.abs(days);labTxt='天前';}
+    document.getElementById('detailNumber').textContent=numTxt;
+    document.getElementById('detailLabel').textContent=labTxt;
+    document.getElementById('detailDateText').textContent=`${formatDateWithWeekday(e.date)}${e.endDate?' → '+formatDateWithWeekday(e.endDate):''} · ${e.name}`;
+    if(e.endDate){
+      const totalDays=Math.floor((new Date(e.endDate+'T00:00:00')-new Date(e.date+'T00:00:00'))/86400000);
+      document.getElementById('detailLabel').textContent+=` (共${totalDays}天)`;
+    }
+    // 文字颜色
+    const tc = e.titleColor || '#fff';
+    document.getElementById('detailNumber').style.color = tc;
+    document.getElementById('detailLabel').style.color = tc;
+    document.getElementById('detailDateText').style.color = tc;
+    // 颜色圆点
+    document.querySelectorAll('.color-dot').forEach(d=>{d.classList.toggle('selected', d.dataset.color===tc);});
+    document.getElementById('detailBroText').textContent = randomQuote(e.category);
+    document.getElementById('pinEventBtn').textContent = e.pinned ? '📌 已置顶' : '📌 置顶';
+  }
+
+  // ========== 日记页 ==========
+  function renderDiary(){
+    const e = appData.events.find(ev=>ev.id===currentEventId); if(!e) return;
+    document.getElementById('diaryContent').value = e.diary || '';
+    const content = e.diary || '';
+    if(!content) document.getElementById('diaryBroText').textContent = randomQuote('diary');
+    else if(content.length<20) document.getElementById('diaryBroText').textContent = '再写一点吧，哥哥想看更多~';
+    else document.getElementById('diaryBroText').textContent = '写了好多呢，宝宝真用心。';
+    const mode = e.diaryBgMode || 'default';
+    const page = document.getElementById('page-diary');
+    if(mode==='photo'&&e.photo){page.style.backgroundImage=`url(${e.photo})`;page.style.backgroundSize='cover';page.style.backgroundPosition='center';}
+    else if(mode==='blur'&&e.photo){page.style.backgroundImage=`url(${e.photo})`;page.style.backgroundSize='cover';page.style.backgroundPosition='center';page.style.backdropFilter='blur(6px)';}
+    else{page.style.backgroundImage='';page.style.backgroundSize='';page.style.backdropFilter='';}
+    const btn=document.getElementById('diaryBgToggle');
+    if(btn){const labels={default:'🖼️ 默认',photo:'📷 原图',blur:'🌫️ 遮罩'};btn.textContent=labels[mode]||'🖼️ 切换';}
+  }
+
+  // ========== 里程碑 ==========
+  function renderMilestone(){
+    const e = appData.events.find(ev=>ev.id===currentEventId); if(!e) return;
+    const start = new Date(e.date+'T00:00:00');
+    const todayDate = new Date(); todayDate.setHours(0,0,0,0);
+    const totalDays = Math.floor((todayDate - start) / 86400000);
+    const milestones = [];
+    for(let d=100; d<=totalDays+365; d+=100){
+      const target = new Date(start.getTime() + d*86400000);
+      const remaining = d - totalDays;
+      if(remaining>0) milestones.push(`🎯 ${e.name} ${d}天：还有${remaining}天 (${formatDateWithWeekday(target.toISOString().split('T')[0])})`);
+      else milestones.push(`✅ ${e.name} ${d}天：已完成 (${formatDateWithWeekday(target.toISOString().split('T')[0])})`);
+    }
+    // 周年
+    for(let y=1; y<=5; y++){
+      const anniversary = new Date(start.getTime() + y*365*86400000);
+      const remaining = Math.floor((anniversary - todayDate) / 86400000);
+      if(remaining>-30 && remaining<365){
+        if(remaining>0) milestones.push(`🎂 ${e.name} ${y}周年：还有${remaining}天 (${formatDateWithWeekday(anniversary.toISOString().split('T')[0])})`);
+        else if(remaining===0) milestones.push(`🎂 ${e.name} ${y}周年：就是今天！`);
+        else milestones.push(`🎂 ${e.name} ${y}周年：已过${Math.abs(remaining)}天`);
+      }
+    }
+    document.getElementById('milestoneContent').innerHTML = milestones.length>0 ? milestones.join('<br>') : '还没有里程碑，继续加油哦~';
+    document.getElementById('milestoneModal').classList.remove('hidden');
+  }
+
+  // ========== 设置页 ==========
+  function renderEffectList(){
+    const list = document.getElementById('effectList');
+    list.innerHTML = effects.map(e=>`<span class="effect-option${appData.clickEffect===e.id?' selected':''}" data-id="${e.id}">${e.name}</span>`).join('');
+    list.onclick = function(ev){const el=ev.target.closest('.effect-option');if(!el)return;appData.clickEffect=el.dataset.id;save();renderEffectList();};
+  }
+  function initSettingsPage(){document.getElementById('photoMode').value=appData.photoMode;renderEffectList();}
+
+  // ========== 方形数字卡片 ==========
+  function openCardModal(){
+    const e = appData.events.find(ev=>ev.id===currentEventId); if(!e) return;
+    const days=calcDays(e.date);
+    let numTxt; if(days===0)numTxt='🎉'; else numTxt=Math.abs(days);
+    const preview=document.getElementById('cardPreview');
+    if(e.photo) preview.style.backgroundImage=`url(${e.photo})`;
+    else{const bgMap={love:'linear-gradient(135deg,#fce4ec,#f8bbd0)',birthday:'linear-gradient(135deg,#fff3e0,#ffccbc)',holiday:'linear-gradient(135deg,#fffde0,#ffe082)',life:'linear-gradient(135deg,#f5f0e8,#e8dcc8)',study:'linear-gradient(135deg,#e8f0f8,#c8d8e8)',custom:'linear-gradient(135deg,#f3e5f5,#e1bee7)'};preview.style.backgroundImage=bgMap[e.category]||bgMap.custom;}
+    preview.querySelector('#cardNumber').textContent = numTxt;
+    preview.querySelector('#cardNumber').style.color = e.titleColor || '#fff';
+    preview.querySelector('#cardLabel').style.color = e.titleColor || '#fff';
+    document.getElementById('cardModal').classList.remove('hidden');
+  }
+
+  function saveCardImage(){
+    const canvas = document.getElementById('cardCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 500; canvas.height = 500;
+    const e = appData.events.find(ev=>ev.id===currentEventId); if(!e) return;
+    // 背景
+    if(e.photo){
+      const img = new Image();
+      img.onload = function(){
+        ctx.drawImage(img, 0, 0, 500, 500);
+        ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(0,0,500,500);
+        drawCardText(ctx, e);
+      };
+      img.src = e.photo;
+    } else {
+      const bgMap={love:'#fce4ec',birthday:'#fff3e0',holiday:'#fffde0',life:'#f5f0e8',study:'#e8f0f8',custom:'#f3e5f5'};
+      ctx.fillStyle=bgMap[e.category]||'#f3e5f5'; ctx.fillRect(0,0,500,500);
+      drawCardText(ctx, e);
+    }
+  }
+
+  function drawCardText(ctx, e){
+    const days=calcDays(e.date); let numTxt; if(days===0)numTxt='🎉'; else numTxt=Math.abs(days);
+    const tc = e.titleColor || '#fff';
+    ctx.fillStyle = tc; ctx.textAlign = 'center'; ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
+    ctx.font = 'bold 160px "PingFang SC","Microsoft YaHei"'; ctx.fillText(numTxt, 250, 260);
+    ctx.font = 'bold 40px "PingFang SC","Microsoft YaHei"'; ctx.fillText('天', 250, 320);
+    ctx.font = 'bold 30px "PingFang SC","Microsoft YaHei"'; ctx.fillText(e.name, 250, 390);
+    ctx.font = '24px "PingFang SC","Microsoft YaHei"'; ctx.fillText(formatDateWithWeekday(e.date), 250, 430);
+    canvas.toBlob(function(blob){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `${e.name}_卡片.png`; a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  // ========== 数据备份 ==========
+  function exportData(){
+    const blob = new Blob([JSON.stringify(appData,null,2)],{type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `宝宝纪念日_备份_${today}.json`; a.click();
+    URL.revokeObjectURL(url);
+  }
+  function importData(file){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        const data = JSON.parse(e.target.result);
+        if(data.events){appData = data; save(); renderHome(); alert('数据导入成功！');}
+        else{alert('文件格式不正确');}
+      }catch(ex){alert('文件解析失败');}
+    };
+    reader.readAsText(file);
+  }
+
+  // ========== 小熊 ==========
+  function updateBroEmoji(){
+    const bro = document.getElementById('broEmoji');
+    const todayEvents = appData.events.filter(e=>calcDays(e.date)===0);
+    if(todayEvents.length>0){
+      const cats = todayEvents.map(e=>e.category);
+      if(cats.includes('birthday')) bro.textContent = '🎂';
+      else if(cats.includes('love')) bro.textContent = '💖';
+      else bro.textContent = '🎉';
+    } else { bro.textContent = '🧸'; }
+  }
+
+  // ========== 事件绑定 ==========
+  document.getElementById('broEmoji').addEventListener('click',function(e){
+    const heart=document.createElement('span');heart.textContent='💖';heart.className='heart-particle';
+    const rect=this.getBoundingClientRect();heart.style.left=(rect.left+rect.width/2-12)+'px';heart.style.top=(rect.top-10)+'px';
+    document.body.appendChild(heart);setTimeout(()=>heart.remove(),1500);
+    document.getElementById('homeBroText').textContent = getTimeGreeting();
+  });
+  document.getElementById('detailBroEmoji').addEventListener('click',function(e){
+    const heart=document.createElement('span');heart.textContent='💖';heart.className='heart-particle';
+    const rect=this.getBoundingClientRect();heart.style.left=(rect.left+rect.width/2-12)+'px';heart.style.top=(rect.top-10)+'px';
+    document.body.appendChild(heart);setTimeout(()=>heart.remove(),1500);
+    const ev=appData.events.find(e=>e.id===currentEventId);
+    document.getElementById('detailBroText').textContent = randomQuote(ev?ev.category:'love');
   });
 
-  document.getElementById('homeBroText').textContent = randomQuote('home');
-}
+  // 页面切换
+  document.getElementById('goSettingsBtn').addEventListener('click',()=>{switchPage('settings');initSettingsPage();});
+  document.getElementById('settingsBackBtn').addEventListener('click',()=>{switchPage('home');renderHome();});
+  document.getElementById('detailBackBtn').addEventListener('click',()=>{switchPage('home');renderHome();});
+  document.getElementById('diaryBackBtn').addEventListener('click',()=>{switchPage('detail');renderDetail();});
+  document.getElementById('diaryBtn').addEventListener('click',()=>{renderDiary();switchPage('diary');});
+  document.getElementById('milestoneBtn').addEventListener('click',renderMilestone);
+  document.getElementById('closeMilestoneBtn').addEventListener('click',()=>document.getElementById('milestoneModal').classList.add('hidden'));
 
-// ========== 详情页渲染 ==========
-function renderDetail(){
-  const event = appData.events.find(e=>e.id === currentEventId);
-  if(!event) return;
-  
-  const days = calcDays(event.date, event.calendarType);
-  const photoCard = document.getElementById('detailPhotoCard');
-  
-  // 设置照片背景
-  if(event.photo){
-    photoCard.style.backgroundImage = `url(${event.photo})`;
-    photoCard.style.backgroundSize = 'cover';
-  } else {
-    const bgMap = {love:'linear-gradient(135deg,#fce4ec,#f8bbd0)', birthday:'linear-gradient(135deg,#fff3e0,#ffccbc)', holiday:'linear-gradient(135deg,#fffde0,#ffe082)', custom:'linear-gradient(135deg,#f3e5f5,#e1bee7)'};
-    photoCard.style.backgroundImage = bgMap[event.category] || bgMap.custom;
-    photoCard.style.backgroundSize = 'cover';
-  }
-  
-  let numberText, labelText;
-  if(days === 0){ numberText = '🎉'; labelText = '就是今天！'; }
-  else if(days > 0){ numberText = days; labelText = '天后'; }
-  else { numberText = Math.abs(days); labelText = '天前'; }
-  
-  document.getElementById('detailNumber').textContent = numberText;
-  document.getElementById('detailLabel').textContent = labelText;
-  document.getElementById('detailDateText').textContent = `${event.date}${event.calendarType==='lunar'?' (农历)':''} · ${event.name}`;
-  
-  // 哥哥话语
-  let quoteCategory = event.category;
-  if(days === 0) quoteCategory = event.category;
-  else if(days > 0 && days <= 7) quoteCategory = 'near';
-  document.getElementById('detailBroText').textContent = randomQuote(quoteCategory);
-}
+  // 分类筛选
+  document.getElementById('categoryFilter').addEventListener('click',function(e){
+    const el=e.target.closest('.filter-tag');if(!el)return;
+    this.querySelectorAll('.filter-tag').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');currentFilter=el.dataset.cat;renderHome();
+  });
 
-// ========== 日记页 ==========
-function renderDiary(){
-  const event = appData.events.find(e=>e.id === currentEventId);
-  if(!event) return;
-  document.getElementById('diaryTitle').textContent = event.name;
-  document.getElementById('diaryContent').value = event.diary || '';
-  document.getElementById('diaryBroText').textContent = randomQuote('diary');
-}
-  // ========== 皮肤商店 ==========
-function renderShop(){
-  document.getElementById('shopCoinCount').textContent = appData.coins;
-  const list = document.getElementById('skinList');
-  list.innerHTML = skins.map(s=>{
-    const owned=appData.skins.owned.includes(s.id);
-    const active=appData.skins.active===s.id;
-    return`<div class="skin-card${active?' selected':''}${!owned?' locked':''}" style="background:${s.bg}" data-id="${s.id}"><div>${s.emoji}</div><div style="font-size:0.65rem">${s.name}</div><div style="font-size:0.6rem">${owned?(active?'使用中':'已拥有'):'🪙'+s.price}</div></div>`;
-  }).join('');
-  list.onclick=function(e){
-    const el=e.target.closest('.skin-card');if(!el)return;
-    const id=el.dataset.id;const skin=skins.find(s=>s.id===id);if(!skin)return;
-    if(!appData.skins.owned.includes(id)){
-      if(appData.coins>=skin.price){appData.coins-=skin.price;appData.skins.owned.push(id);save();applySkin(id);renderShop();document.getElementById('shopBroText').textContent='皮肤已兑换！好漂亮~';}
-      else{document.getElementById('shopBroText').textContent='金币不够哦，添加纪念日可以赚金币~';}
-    }else{applySkin(id);renderShop();document.getElementById('shopBroText').textContent='皮肤已切换！';}
-  };
-}
+  // 搜索
+  document.getElementById('searchInput').addEventListener('input',function(){searchQuery=this.value.trim();renderHome();});
 
-// ========== 设置弹窗 ==========
-function renderEffectList(){
-  const list = document.getElementById('effectList');
-  list.innerHTML = effects.map(e=>{
-    const selected = appData.clickEffect === e.id;
-    return `<span class="effect-option${selected?' selected':''}" data-id="${e.id}">${e.name}</span>`;
-  }).join('');
-  list.onclick = function(e){
-    const el = e.target.closest('.effect-option');
-    if(!el) return;
-    appData.clickEffect = el.dataset.id;
-    save();
-    renderEffectList();
-  };
-}
+  // 置顶
+  document.getElementById('pinEventBtn').addEventListener('click',function(){
+    const e=appData.events.find(ev=>ev.id===currentEventId);if(!e)return;
+    e.pinned=!e.pinned;save();renderDetail();renderHome();
+  });
 
-function openSettings(){
-  document.getElementById('photoMode').value = appData.photoMode;
-  renderEffectList();
-  document.getElementById('settingsModal').classList.remove('hidden');
-}
+  // 删除
+  document.getElementById('deleteEventBtn').addEventListener('click',function(){
+    if(!confirm('确定要删除吗？'))return;
+    appData.events=appData.events.filter(e=>e.id!==currentEventId);save();switchPage('home');renderHome();
+  });
 
-function closeSettings(){
-  document.getElementById('settingsModal').classList.add('hidden');
-}
+  // 日记保存
+  document.getElementById('saveDiaryBtn').addEventListener('click',function(){
+    const e=appData.events.find(ev=>ev.id===currentEventId);if(!e)return;
+    e.diary=document.getElementById('diaryContent').value;save();
+    document.getElementById('diaryBroText').textContent='日记已保存！这些回忆，哥哥帮你守着。';
+  });
 
-// ========== 点击特效 ==========
-document.addEventListener('click',function(e){
-  if(e.target.closest('button')||e.target.closest('input')||e.target.closest('select')||e.target.closest('textarea')||e.target.closest('.modal-overlay')) return;
-  if(appData.clickEffect === 'none') return;
-  const eff = effects.find(ef=>ef.id===appData.clickEffect);
-  if(!eff) return;
-  const count = eff.type==='pattern' ? 8 : 12;
-  for(let i=0;i<count;i++){
-    const particle=document.createElement('div');
-    particle.className='click-particle';
-    const angle=(Math.PI*2*i)/count;
-    const distance=30+Math.random()*60;
-    particle.style.cssText=`
-      left:${e.clientX}px;top:${e.clientY}px;
-      font-size:${14+Math.random()*16}px;
-      --dx:${Math.cos(angle)*distance}px;--dy:${Math.sin(angle)*distance}px;
-      ${eff.type==='pattern'?'' : `width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;background:${eff.color==='random'?`hsl(${Math.random()*360},80%,60%)`:eff.color};border-radius:50%`}
-    `;
-    if(eff.type==='pattern') particle.textContent = eff.emoji;
-    document.body.appendChild(particle);
-    setTimeout(()=>particle.remove(),800);
-  }
-});// ========== 皮肤商店 ==========
-function renderShop(){
-  document.getElementById('shopCoinCount').textContent = appData.coins;
-  const list = document.getElementById('skinList');
-  list.innerHTML = skins.map(s=>{
-    const owned=appData.skins.owned.includes(s.id);
-    const active=appData.skins.active===s.id;
-    return`<div class="skin-card${active?' selected':''}${!owned?' locked':''}" style="background:${s.bg}" data-id="${s.id}"><div>${s.emoji}</div><div style="font-size:0.65rem">${s.name}</div><div style="font-size:0.6rem">${owned?(active?'使用中':'已拥有'):'🪙'+s.price}</div></div>`;
-  }).join('');
-  list.onclick=function(e){
-    const el=e.target.closest('.skin-card');if(!el)return;
-    const id=el.dataset.id;const skin=skins.find(s=>s.id===id);if(!skin)return;
-    if(!appData.skins.owned.includes(id)){
-      if(appData.coins>=skin.price){appData.coins-=skin.price;appData.skins.owned.push(id);save();applySkin(id);renderShop();document.getElementById('shopBroText').textContent='皮肤已兑换！好漂亮~';}
-      else{document.getElementById('shopBroText').textContent='金币不够哦，添加纪念日可以赚金币~';}
-    }else{applySkin(id);renderShop();document.getElementById('shopBroText').textContent='皮肤已切换！';}
-  };
-}
+  // 日记背景切换
+  document.getElementById('diaryBgToggle').addEventListener('click',function(){
+    const e=appData.events.find(ev=>ev.id===currentEventId);if(!e)return;
+    const modes=['default','photo','blur'];const cur=modes.indexOf(e.diaryBgMode||'default');
+    e.diaryBgMode=modes[(cur+1)%3];save();renderDiary();
+  });
 
-// ========== 设置弹窗 ==========
-function renderEffectList(){
-  const list = document.getElementById('effectList');
-  list.innerHTML = effects.map(e=>{
-    const selected = appData.clickEffect === e.id;
-    return `<span class="effect-option${selected?' selected':''}" data-id="${e.id}">${e.name}</span>`;
-  }).join('');
-  list.onclick = function(e){
-    const el = e.target.closest('.effect-option');
-    if(!el) return;
-    appData.clickEffect = el.dataset.id;
-    save();
-    renderEffectList();
-  };
-}
+  // 事件照片
+  document.getElementById('changePhotoBtn').addEventListener('click',function(){
+    const choice=confirm('📷 拍照 = 确定\n🖼️ 相册 = 取消');
+    if(choice){document.getElementById('eventPhotoInput').onchange=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){const evt=appData.events.find(e=>e.id===currentEventId);if(evt){evt.photo=e.target.result;save();renderDetail();}};r.readAsDataURL(f);};document.getElementById('eventPhotoInput').click();}
+    else{document.getElementById('eventGalleryInput').onchange=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){const evt=appData.events.find(e=>e.id===currentEventId);if(evt){evt.photo=e.target.result;save();renderDetail();}};r.readAsDataURL(f);};document.getElementById('eventGalleryInput').click();}
+  });
 
-function openSettings(){
-  document.getElementById('photoMode').value = appData.photoMode;
-  renderEffectList();
-  document.getElementById('settingsModal').classList.remove('hidden');
-}
+  // 文字颜色
+  document.querySelectorAll('.color-dot').forEach(d=>{d.addEventListener('click',function(){const ev=appData.events.find(e=>e.id===currentEventId);if(!ev)return;ev.titleColor=this.dataset.color;save();renderDetail();});});
 
-function closeSettings(){
-  document.getElementById('settingsModal').classList.add('hidden');
-}
+  // 卡片保存
+  document.getElementById('saveCardBtn').addEventListener('click',openCardModal);
+  document.getElementById('saveCardImageBtn').addEventListener('click',saveCardImage);
+  document.getElementById('closeCardBtn').addEventListener('click',()=>document.getElementById('cardModal').classList.add('hidden'));
 
-// ========== 点击特效 ==========
-document.addEventListener('click',function(e){
-  if(e.target.closest('button')||e.target.closest('input')||e.target.closest('select')||e.target.closest('textarea')||e.target.closest('.modal-overlay')) return;
-  if(appData.clickEffect === 'none') return;
-  const eff = effects.find(ef=>ef.id===appData.clickEffect);
-  if(!eff) return;
-  const count = eff.type==='pattern' ? 8 : 12;
-  for(let i=0;i<count;i++){
-    const particle=document.createElement('div');
-    particle.className='click-particle';
-    const angle=(Math.PI*2*i)/count;
-    const distance=30+Math.random()*60;
-    particle.style.cssText=`
-      left:${e.clientX}px;top:${e.clientY}px;
-      font-size:${14+Math.random()*16}px;
-      --dx:${Math.cos(angle)*distance}px;--dy:${Math.sin(angle)*distance}px;
-      ${eff.type==='pattern'?'' : `width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;background:${eff.color==='random'?`hsl(${Math.random()*360},80%,60%)`:eff.color};border-radius:50%`}
-    `;
-    if(eff.type==='pattern') particle.textContent = eff.emoji;
-    document.body.appendChild(particle);
-    setTimeout(()=>particle.remove(),800);
-  }
-});// ========== 添加事件弹窗 ==========
-function openAddEvent(){
-  document.getElementById('eventNameInput').value = '';
-  document.getElementById('eventDateInput').value = new Date().toISOString().split('T')[0];
-  document.getElementById('eventCategory').value = 'love';
-  document.getElementById('calendarType').value = 'solar';
-  document.getElementById('addEventModal').classList.remove('hidden');
-}
+  // 添加事件
+  document.getElementById('addEventFAB').addEventListener('click',function(){
+    document.getElementById('eventNameInput').value='';document.getElementById('eventDateInput').value=today;
+    document.getElementById('eventEndDateInput').value='';document.getElementById('addEventModal').classList.remove('hidden');
+  });
+  document.getElementById('cancelEventBtn').addEventListener('click',()=>document.getElementById('addEventModal').classList.add('hidden'));
+  document.getElementById('saveEventBtn').addEventListener('click',function(){
+    const name=document.getElementById('eventNameInput').value.trim();
+    const date=document.getElementById('eventDateInput').value;
+    const category=document.getElementById('eventCategory').value;
+    const calendarType=document.getElementById('calendarType').value;
+    const endDate=document.getElementById('eventEndDateInput').value;
+    if(!name||!date){alert('请填写名称和日期');return;}
+    appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,photo:null,diary:'',pinned:false,titleColor:'#fff',diaryBgMode:'default'});
+    save();document.getElementById('addEventModal').classList.add('hidden');renderHome();updateBroEmoji();
+  });
 
-function closeAddEvent(){
-  document.getElementById('addEventModal').classList.add('hidden');
-}
+  // 背景照片
+  document.getElementById('photoFromCamera').addEventListener('click',function(){
+    document.getElementById('bgPhotoInput').onchange=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){appData.bgPhoto=e.target.result;save();applyBgPhoto();};r.readAsDataURL(f);};document.getElementById('bgPhotoInput').click();
+  });
+  document.getElementById('photoFromGallery').addEventListener('click',function(){
+    document.getElementById('bgGalleryInput').onchange=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){appData.bgPhoto=e.target.result;save();applyBgPhoto();};r.readAsDataURL(f);};document.getElementById('bgGalleryInput').click();
+  });
+  document.getElementById('photoRemove').addEventListener('click',function(){appData.bgPhoto=null;save();applyBgPhoto();});
+  document.getElementById('photoMode').addEventListener('change',function(){appData.photoMode=this.value;save();applyBgPhoto();});
 
-document.getElementById('saveEventBtn').addEventListener('click', function(){
-  const name = document.getElementById('eventNameInput').value.trim();
-  const date = document.getElementById('eventDateInput').value;
-  const category = document.getElementById('eventCategory').value;
-  const calendarType = document.getElementById('calendarType').value;
-  
-  if(!name){ alert('请输入事件名称'); return; }
-  if(!date){ alert('请选择日期'); return; }
+  // 数据备份
+  document.getElementById('exportDataBtn').addEventListener('click',exportData);
+  document.getElementById('importDataBtn').addEventListener('click',function(){document.getElementById('importFileInput').click();});
+  document.getElementById('importFileInput').addEventListener('change',function(ev){const f=ev.target.files[0];if(f)importData(f);});
 
-  const newEvent = {
-    id: Date.now(),
-    name: name,
-    date: date,
-    category: category,
-    calendarType: calendarType,
-    photo: null,
-    diary: '',
-    pinned: false,
-    created: new Date().toISOString()
-  };
+  // 点击特效
+  document.addEventListener('click',function(e){
+    if(e.target.closest('button')||e.target.closest('input')||e.target.closest('select')||e.target.closest('textarea')||e.target.closest('.modal-overlay'))return;
+    if(appData.clickEffect==='none')return;
+    const eff=effects.find(ef=>ef.id===appData.clickEffect);if(!eff)return;
+    const count=eff.type==='pattern'?8:12;
+    for(let i=0;i<count;i++){
+      const p=document.createElement('div');p.className='click-particle';
+      const angle=(Math.PI*2*i)/count,dist=30+Math.random()*60;
+      p.style.cssText=`left:${e.clientX}px;top:${e.clientY}px;font-size:${14+Math.random()*16}px;--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;${eff.type==='pattern'?'':`width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;background:${eff.color==='random'?`hsl(${Math.random()*360},80%,60%)`:eff.color};border-radius:50%`}`;
+      if(eff.type==='pattern')p.textContent=eff.emoji;
+      document.body.appendChild(p);setTimeout(()=>p.remove(),800);
+    }
+  });
 
-  appData.events.push(newEvent);
-  appData.coins += 5;
-  save();
-  closeAddEvent();
-  renderHome();
-});
+  // 弹窗关闭
+  document.getElementById('addEventModal').addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});
+  document.getElementById('milestoneModal').addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});
+  document.getElementById('cardModal').addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});
 
-// ========== 事件照片 ==========
-document.getElementById('changePhotoBtn').addEventListener('click', function(){
-  const event = appData.events.find(e=>e.id === currentEventId);
-  if(!event) return;
-  
-  // 创建选择：拍照或相册
-  const choice = confirm('📷 拍照 = 确定\n🖼️ 相册 = 取消');
-  if(choice){
-    document.getElementById('eventPhotoInput').onchange = function(ev){
-      const file = ev.target.files[0];
-      if(!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e){
-        event.photo = e.target.result;
-        save();
-        renderDetail();
-      };
-      reader.readAsDataURL(file);
-    };
-    document.getElementById('eventPhotoInput').click();
-  } else {
-    document.getElementById('eventGalleryInput').onchange = function(ev){
-      const file = ev.target.files[0];
-      if(!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e){
-        event.photo = e.target.result;
-        save();
-        renderDetail();
-      };
-      reader.readAsDataURL(file);
-    };
-    document.getElementById('eventGalleryInput').click();
-  }
-});
-
-// ========== 删除事件 ==========
-document.getElementById('deleteEventBtn').addEventListener('click', function(){
-  if(!confirm('确定要删除这个事件吗？')) return;
-  appData.events = appData.events.filter(e=>e.id !== currentEventId);
-  save();
-  switchPage('home');
-  renderHome();
-});
-
-// ========== 日记保存 ==========
-document.getElementById('saveDiaryBtn').addEventListener('click', function(){
-  const event = appData.events.find(e=>e.id === currentEventId);
-  if(!event) return;
-  event.diary = document.getElementById('diaryContent').value;
-  save();
-  document.getElementById('diaryBroText').textContent = '日记已保存！这些回忆，哥哥帮你守着。';
-  setTimeout(()=>{ document.getElementById('diaryBroText').textContent = randomQuote('diary'); }, 2000);
-});// ========== 哥哥互动 ==========
-document.getElementById('broEmoji').addEventListener('click', function(e){
-  const heart=document.createElement('span');
-  heart.textContent=['💕','💖','💗','💝','✨'][Math.floor(Math.random()*5)];
-  heart.className='heart-particle';
-  const rect=this.getBoundingClientRect();
-  heart.style.left=(rect.left+rect.width/2-12)+'px';
-  heart.style.top=(rect.top-10)+'px';
-  document.body.appendChild(heart);
-  setTimeout(()=>heart.remove(),1500);
-  document.getElementById('homeBroText').textContent = randomQuote('home');
-});
-
-document.getElementById('detailBroEmoji').addEventListener('click', function(e){
-  const heart=document.createElement('span');
-  heart.textContent=['💕','💖','💗'][Math.floor(Math.random()*3)];
-  heart.className='heart-particle';
-  const rect=this.getBoundingClientRect();
-  heart.style.left=(rect.left+rect.width/2-12)+'px';
-  heart.style.top=(rect.top-10)+'px';
-  document.body.appendChild(heart);
-  setTimeout(()=>heart.remove(),1500);
-  const event = appData.events.find(e=>e.id === currentEventId);
-  document.getElementById('detailBroText').textContent = randomQuote(event?event.category:'love');
-});
-
-// ========== 页面切换按钮 ==========
-document.getElementById('addEventFAB').addEventListener('click', openAddEvent);
-document.getElementById('cancelEventBtn').addEventListener('click', closeAddEvent);
-document.getElementById('detailBackBtn').addEventListener('click', ()=>{switchPage('home');renderHome();});
-document.getElementById('diaryBackBtn').addEventListener('click', ()=>{switchPage('detail');renderDetail();});
-document.getElementById('diaryBtn').addEventListener('click', ()=>{renderDiary();switchPage('diary');});
-document.getElementById('goShopBtn').addEventListener('click', ()=>{switchPage('shop');renderShop();});
-document.getElementById('shopBackBtn').addEventListener('click', ()=>{switchPage('home');renderHome();});
-document.getElementById('addEventModal').addEventListener('click', function(e){if(e.target===this)closeAddEvent();});
-
-// ========== 设置弹窗控制 ==========
-document.getElementById('openSettingsBtn').addEventListener('click', function(e){e.stopPropagation();openSettings();});
-document.getElementById('closeSettingsBtn').addEventListener('click', function(e){e.stopPropagation();closeSettings();});
-document.getElementById('settingsModal').addEventListener('click', function(e){if(e.target===this)closeSettings();});
-document.getElementById('settingsModal').classList.add('hidden');
-
-// 照片模式
-document.getElementById('photoMode').addEventListener('change', function(){
-  appData.photoMode = this.value;
-  save();
-  applyBgPhoto();
-});
-
-// App背景照片
-document.getElementById('photoFromCamera').addEventListener('click', function(){
-  document.getElementById('bgPhotoInput').onchange = function(ev){
-    const file = ev.target.files[0]; if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e){ appData.bgPhoto = e.target.result; save(); applyBgPhoto(); };
-    reader.readAsDataURL(file);
-  };
-  document.getElementById('bgPhotoInput').click();
-});
-
-document.getElementById('photoFromGallery').addEventListener('click', function(){
-  document.getElementById('bgGalleryInput').onchange = function(ev){
-    const file = ev.target.files[0]; if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e){ appData.bgPhoto = e.target.result; save(); applyBgPhoto(); };
-    reader.readAsDataURL(file);
-  };
-  document.getElementById('bgGalleryInput').click();
-});
-
-document.getElementById('photoRemove').addEventListener('click', function(){
-  appData.bgPhoto = null; save(); applyBgPhoto();
-});  // ========== PWA ==========
+  // ========== PWA ==========
   const manifest={name:'宝宝纪念日',short_name:'纪念日',start_url:location.href,display:'standalone',background_color:'#fff5f9',theme_color:'#fff5f9',icons:[{src:"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="#ffd1e0"/><text y=".9em" font-size="70" text-anchor="middle" x="50">📅</text></svg>'),sizes:'100x100',type:'image/svg+xml'}]};
   document.getElementById('pwaManifest').href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/json'}));
 
   // ========== 启动 ==========
-  applySkin(appData.skins.active);
-  applyBgPhoto();
-  renderHome();
+  applyBgPhoto(); renderHome(); updateBroEmoji();
 })();
 </script>
 </body>
