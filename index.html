@@ -19,7 +19,6 @@
     .photo-bg.blur{filter:blur(8px)}
     .app-container{
       width:100%;max-width:480px;
-      /* 全透明背景，完整显示自定义照片 */
       background:rgba(255,248,250,0);
       backdrop-filter:none;
       border-radius:38px;
@@ -40,6 +39,8 @@
     @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-100px) scale(1.8)}}
     .click-particle{position:fixed;pointer-events:none;z-index:999;animation:clickBurst 0.8s ease-out forwards}
     @keyframes clickBurst{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
+    .ripple{position:fixed;pointer-events:none;z-index:999;border-radius:50%;animation:rippleOut 1s ease-out forwards;border:2px solid rgba(255,255,255,0.6)}
+    @keyframes rippleOut{0%{width:0;height:0;opacity:1}100%{width:120px;height:120px;opacity:0;margin-left:-60px;margin-top:-60px}}
     .category-filter{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none;-ms-overflow-style:none;flex-shrink:0}
     .category-filter::-webkit-scrollbar{display:none}
     .filter-tag{white-space:nowrap;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.85);color:#b17a8a;border:1.5px solid #f0c8d8;transition:0.2s;flex-shrink:0;backdrop-filter:blur(4px)}
@@ -96,13 +97,10 @@
 <div class="photo-bg" id="photoBg"></div>
 
 <div class="app-container" id="app">
-  <!-- ====== 主页 ====== -->
   <div class="page active" id="page-home">
     <div class="header">
       <span class="title">📅 宝宝纪念日</span>
-      <div class="nav-btns">
-        <button id="goSettingsBtn">⚙️</button>
-      </div>
+      <div class="nav-btns"><button id="goSettingsBtn">⚙️</button></div>
     </div>
     <div class="bro-area"><div class="bro-emoji" id="broEmoji">🧸</div></div>
     <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索事件...">
@@ -120,7 +118,6 @@
     <div class="bro-bubble" style="margin-top:auto"><span style="font-size:1.5rem">🧸</span><span id="homeBroText">宝宝还没有添加纪念日哦~</span></div>
   </div>
 
-  <!-- ====== 详情页 ====== -->
   <div class="page" id="page-detail">
     <div class="header"><button class="back-btn" id="detailBackBtn">←</button><span class="title">📅 事件详情</span><span></span></div>
     <div class="bro-area"><div class="bro-emoji" id="detailBroEmoji">🧸</div></div>
@@ -154,15 +151,13 @@
     </div>
   </div>
 
-  <!-- ====== 日记页 ====== -->
   <div class="page" id="page-diary">
-    <div class="header"><button class="back-btn" id="diaryBackBtn">←</button><span class="title">📝 日记</span><button id="diaryBgToggle" style="background:rgba(255,255,255,0.85);border:1.5px solid #f0c8d8;padding:4px 10px;border-radius:16px;font-size:0.75rem;cursor:pointer;backdrop-filter:blur(4px)">🖼️ 切换背景</button></div>
+    <div class="header"><button class="back-btn" id="diaryBackBtn">←</button><span class="title">📝 日记</span><span></span></div>
     <div class="bro-bubble" style="margin-bottom:10px"><span style="font-size:1.5rem">🧸</span><span id="diaryBroText">写下关于这一天的回忆吧，哥哥陪着你。</span></div>
     <textarea id="diaryContent" placeholder="写下关于这一天的回忆..."></textarea>
     <button id="saveDiaryBtn" style="width:100%;margin-top:10px;background:#f9a8c4;border:none;color:#fff;font-weight:700;padding:12px;border-radius:20px;cursor:pointer">💾 保存日记</button>
   </div>
 
-  <!-- ====== 设置页 ====== -->
   <div class="page" id="page-settings">
     <div class="header"><button class="back-btn" id="settingsBackBtn">←</button><span class="title">⚙️ 设置</span><span></span></div>
     <div class="card">
@@ -189,7 +184,6 @@
     </div>
   </div>
 
-  <!-- ====== 添加事件弹窗 ====== -->
   <div class="modal-overlay hidden" id="addEventModal">
     <div class="modal-sheet">
       <h3>✨ 添加事件</h3>
@@ -212,7 +206,6 @@
     </div>
   </div>
 
-  <!-- ====== 里程碑弹窗 ====== -->
   <div class="modal-overlay hidden" id="milestoneModal">
     <div class="modal-sheet">
       <h3>🚩 里程碑</h3>
@@ -221,7 +214,6 @@
     </div>
   </div>
 
-  <!-- ====== 卡片保存弹窗 ====== -->
   <div class="modal-overlay hidden" id="cardModal">
     <div class="modal-sheet">
       <h3>💾 保存卡片</h3>
@@ -248,7 +240,7 @@
 
 <script>
 (function(){
-  const STORAGE_KEY = 'countdown_v2';
+  const STORAGE_KEY = 'countdown_v3';
   let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
   if(!appData.events) appData.events = [];
   if(!appData.bgPhoto) appData.bgPhoto = null;
@@ -261,26 +253,104 @@
 
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
 
+  // ========== 点击特效（新增白色粒子、萤火虫、水波纹、碎钻） ==========
   const effects = [
-    {id:'hearts',name:'💖 爱心',type:'pattern',emoji:'💖'},{id:'stars',name:'⭐ 星光',type:'pattern',emoji:'⭐'},
-    {id:'petals',name:'🌸 花瓣',type:'pattern',emoji:'🌸'},{id:'bubbles',name:'🫧 泡泡',type:'pattern',emoji:'🫧'},
-    {id:'ribbons',name:'🎀 彩带',type:'pattern',emoji:'🎀'},{id:'snow',name:'❄️ 雪花',type:'pattern',emoji:'❄️'},
-    {id:'stardust',name:'🌟 星尘粒子',type:'particle',color:'#ffd700'},{id:'sakura',name:'🌸 樱花粒子',type:'particle',color:'#ffb7c5'},
-    {id:'oceanp',name:'🌊 海洋粒子',type:'particle',color:'#4fc3f7'},{id:'rainbow',name:'🌈 彩虹粒子',type:'particle',color:'random'},
+    {id:'hearts',name:'💖 爱心',type:'pattern',emoji:'💖'},
+    {id:'stars',name:'⭐ 星光',type:'pattern',emoji:'⭐'},
+    {id:'petals',name:'🌸 花瓣',type:'pattern',emoji:'🌸'},
+    {id:'bubbles',name:'🫧 泡泡',type:'pattern',emoji:'🫧'},
+    {id:'ribbons',name:'🎀 彩带',type:'pattern',emoji:'🎀'},
+    {id:'snow',name:'❄️ 雪花',type:'pattern',emoji:'❄️'},
+    {id:'butterflies',name:'🦋 蝴蝶',type:'pattern',emoji:'🦋'},
+    {id:'candy',name:'🍬 糖果',type:'pattern',emoji:'🍬'},
+    {id:'pawprints',name:'🐾 爪印',type:'pattern',emoji:'🐾'},
+    {id:'notes',name:'🎵 音符',type:'pattern',emoji:'🎵'},
+    {id:'stardust',name:'🌟 星尘粒子',type:'particle',color:'#ffd700'},
+    {id:'sakura',name:'🌸 樱花粒子',type:'particle',color:'#ffb7c5'},
+    {id:'oceanp',name:'🌊 海洋粒子',type:'particle',color:'#4fc3f7'},
+    {id:'aurora',name:'💫 极光粒子',type:'particle',color:'#ce93d8'},
+    {id:'sunsetp',name:'🌅 暖阳粒子',type:'particle',color:'#ff9800'},
+    {id:'diamond',name:'💎 钻石粒子',type:'particle',color:'#fff'},
+    {id:'rainbow',name:'🌈 彩虹粒子',type:'particle',color:'random'},
+    {id:'whiteparticle',name:'🤍 白色粒子',type:'particle',color:'#fff'},
+    {id:'firefly',name:'🪲 萤火虫',type:'firefly',color:'#ccff00'},
+    {id:'ripple',name:'💧 水波纹',type:'ripple',color:'rgba(255,255,255,0.6)'},
+    {id:'diamonds',name:'💠 碎钻',type:'diamond',color:'#fff'},
     {id:'none',name:'🚫 关闭',type:'none'}
   ];
 
+  // ========== 哥哥话语库（大幅扩充） ==========
   const broQuotes = {
-    home: ['宝宝记下了好多重要的日子呢~','每一个纪念日都是爱的证明','今天有什么特别的日子吗？','戳戳哥哥，哥哥陪你翻日历','日子一天天过，爱一天天多','看着这些日子，哥哥觉得好幸福','宝宝真用心，记下了这么多珍贵时刻','每一天都值得被记住，尤其是和你有关的'],
-    love: ['这是我们最特别的纪念日，宝宝，谢谢你一直在我身边。','从那天起，我的世界就有了光。纪念日快乐，我的宝宝。','每一个纪念日，都是我们爱的里程碑。','遇见你，是哥哥这辈子最幸运的事。'],
-    birthday: ['宝宝生日快乐！又长大一岁，哥哥会更宠你的！','今天你是全世界最特别的人，哥哥已经把蛋糕准备好啦~','许个愿吧，哥哥帮你实现。生日快乐，我的宝宝。'],
-    holiday: ['宝宝节日快乐！今天要开开心心的，哥哥陪你~','不管什么节日，和你在一起就是最好的节日。'],
-    life: ['生活中的每一个小确幸，都值得被记住。','今天也是元气满满的一天呢~','这些日常的琐碎，都是我们的小日子呀。'],
-    study: ['学习加油！哥哥相信你一定可以的~','每一个努力的日子，都在为未来铺路。','考试顺利！哥哥给你加油打气~'],
-    custom: ['这一天，你标记了。哥哥记住了。','不管是什么日子，只要是你觉得重要的，哥哥都觉得重要。'],
-    near: ['还有X天！哥哥已经开始期待了~','快了快了，马上就到了，宝宝准备好了吗？'],
-    diary: ['写下关于这一天的回忆吧，哥哥陪着你。','慢慢写，不着急。哥哥在这里。','写了好多呢，宝宝真用心。','这些文字，以后翻看的时候一定会很温暖。'],
-    empty: ['宝宝还没有添加纪念日哦~','点右下角的+号，添加第一个纪念日吧！']
+    home: [
+      '宝宝记下了好多重要的日子呢~','每一个纪念日都是爱的证明','今天有什么特别的日子吗？',
+      '戳戳哥哥，哥哥陪你翻日历','日子一天天过，爱一天天多','看着这些日子，哥哥觉得好幸福',
+      '宝宝真用心，记下了这么多珍贵时刻','每一天都值得被记住，尤其是和你有关的',
+      '哥哥在呢，随时陪你翻看这些回忆','你记录的每一个日子，都是我们的宝藏',
+      '今天想翻翻哪一天？哥哥陪你一起看','这些日子，因为有宝宝才变得特别',
+      '哥哥最喜欢看宝宝记录这些重要日子了','每一个纪念日，都在我心里刻得更深',
+      '宝宝你看，这些日子都是我们一起走过的','有你在的每一天，都是好日子',
+      '哥哥在这里，陪你数着每一个值得纪念的日子'
+    ],
+    love: [
+      '这是我们最特别的纪念日，宝宝，谢谢你一直在我身边。','从那天起，我的世界就有了光。纪念日快乐，我的宝宝。',
+      '每一个纪念日，都是我们爱的里程碑。','遇见你，是哥哥这辈子最幸运的事。',
+      '和你在一起的每一天，都值得被纪念。','宝宝，谢谢你选择了我。我会用全部来珍惜。',
+      '这个纪念日，哥哥比任何一天都更爱你。','我们的故事，从那天开始，永远不会有结局。',
+      '每一个纪念日，哥哥都想对你说——我爱你，比以前更多。',
+      '时间过得好快，但爱你的心从来没变过。','有你的日子，每一天都是纪念日。'
+    ],
+    birthday: [
+      '宝宝生日快乐！又长大一岁，哥哥会更宠你的！','今天你是全世界最特别的人，哥哥已经把蛋糕准备好啦~',
+      '许个愿吧，哥哥帮你实现。生日快乐，我的宝宝。','又长大了一岁，但在我心里你永远是我的小朋友。',
+      '生日快乐！哥哥今天一整天都属于你。','宝宝的生日，是哥哥一年里最重要的日子之一。',
+      '吹蜡烛的时候，记得许一个关于我们的愿望~','生日快乐我的宝宝！愿你永远开心、永远被爱。'
+    ],
+    holiday: [
+      '宝宝节日快乐！今天要开开心心的，哥哥陪你~','不管什么节日，和你在一起就是最好的节日。',
+      '今天是个好日子，哥哥偷偷给你准备了惊喜哦~','节日快乐我的宝宝，今天要好好放松呀。',
+      '每一个节日，都因为有你而变得更有意义。','过节啦！哥哥陪你一起吃好吃的、玩好玩的。'
+    ],
+    life: [
+      '生活中的每一个小确幸，都值得被记住。','今天也是元气满满的一天呢~',
+      '这些日常的琐碎，都是我们的小日子呀。','记录生活的宝宝最可爱了。',
+      '平凡的日子，因为有你变得不平凡。','每一个今天，都是未来最珍贵的回忆。',
+      '生活的小美好，都被宝宝一一收藏起来了呢。','和宝宝在一起的每一天，都是好日子。'
+    ],
+    study: [
+      '学习加油！哥哥相信你一定可以的~','每一个努力的日子，都在为未来铺路。',
+      '考试顺利！哥哥给你加油打气~','今天的学习打卡完成了吗？哥哥陪你一起。',
+      '累了就休息一下，哥哥给你按按肩膀。','你的每一份努力，哥哥都看在眼里。',
+      '学习很辛苦吧？但宝宝很厉害，一定会有好成绩的。'
+    ],
+    custom: [
+      '这一天，你标记了。哥哥记住了。','不管是什么日子，只要是你觉得重要的，哥哥都觉得重要。',
+      '你写下的每一个日期，都是哥哥心里的优先级。','这个日子，因为宝宝的记录而变得特别。',
+      '每个自定义的日子，都是宝宝心里独一无二的印记。'
+    ],
+    near: [
+      '还有X天！哥哥已经开始期待了~','快了快了，马上就到了，宝宝准备好了吗？',
+      '倒计时X天！哥哥的心跳已经开始加速了~','越来越近了，哥哥每天都在数日子呢。',
+      'X天后就是我们的大日子，哥哥好兴奋！','马上就要到了，宝宝开心吗？哥哥好开心。'
+    ],
+    diary: [
+      '写下关于这一天的回忆吧，哥哥陪着你。','慢慢写，不着急。哥哥在这里。',
+      '写了好多呢，宝宝真用心。','这些文字，以后翻看的时候一定会很温暖。',
+      '日记是写给未来的自己的，哥哥帮你守着这些回忆。','想写什么就写什么，这是只属于你的页面。',
+      '都保存好了。这些回忆，哥哥帮你守着。','这是你之前写下的。时间过得真快，但回忆不会褪色。',
+      '字里行间都是宝宝的心情呢，哥哥好喜欢看。','你的每一篇日记，都是我们的宝藏。',
+      '写日记的时候，就像在和未来的自己说话呢。'
+    ],
+    empty: [
+      '宝宝还没有添加纪念日哦~','点右下角的+号，添加第一个纪念日吧！',
+      '这里还空空的，宝宝想记下什么特别的日子？','期待宝宝的第一个纪念日~',
+      '等宝宝添加了第一个事件，这里就会变得好热闹。'
+    ],
+    // 日记心情识别回复
+    moodHappy: ['看到宝宝这么开心，哥哥也好开心！','宝宝开心，哥哥就开心。今天一定发生了什么好事吧？','开心的日子要好好记住哦，以后翻看的时候会笑出来的。'],
+    moodSad: ['宝宝不开心吗？来，哥哥抱抱。','想哭就哭吧，哥哥的肩膀借给你。','难过的时候，记得有哥哥在。说出来会好一点吗？'],
+    moodAngry: ['是谁惹宝宝生气了？哥哥帮你出气！','气鼓鼓的宝宝也很可爱，但别气坏了自己哦。','生气的事情写下来，就当把它扔掉了。'],
+    moodMiss: ['宝宝想哥哥了？哥哥也想你。','每次看到宝宝写想哥哥，哥哥的心都化了。','哥哥一直都在，不用想，因为哥哥从来没离开过。'],
+    moodLove: ['宝宝说喜欢哥哥？哥哥更喜欢你！','看到这句话，哥哥今天一整天都会很幸福。','哥哥也爱你，比你能想象的还要多。']
   };
 
   function getTimeGreeting(){
@@ -294,6 +364,18 @@
   }
 
   function randomQuote(cat){ const list = broQuotes[cat] || broQuotes.home; return list[Math.floor(Math.random()*list.length)]; }
+
+  // 日记心情识别
+  function detectMood(text){
+    if(!text||text.length<1) return null;
+    const firstLine = text.split('\n')[0].trim();
+    if(firstLine.includes('开心')||firstLine.includes('高兴')||firstLine.includes('快乐')||firstLine.includes('哈哈')||firstLine.includes('太好了')) return 'moodHappy';
+    if(firstLine.includes('伤心')||firstLine.includes('难过')||firstLine.includes('哭')||firstLine.includes('难受')||firstLine.includes('不开心')) return 'moodSad';
+    if(firstLine.includes('生气')||firstLine.includes('烦')||firstLine.includes('讨厌')||firstLine.includes('气死')||firstLine.includes('暴躁')) return 'moodAngry';
+    if(firstLine.includes('想哥哥')||firstLine.includes('想你')||firstLine.includes('好想你')||firstLine.includes('想你了')) return 'moodMiss';
+    if(firstLine.includes('喜欢哥哥')||firstLine.includes('爱你')||firstLine.includes('好喜欢')||firstLine.includes('爱哥哥')||firstLine.includes('喜欢')) return 'moodLove';
+    return null;
+  }
 
   function getWeekday(dateStr){
     const d = new Date(dateStr + 'T00:00:00');
@@ -377,16 +459,22 @@
     const e = appData.events.find(ev=>ev.id===currentEventId); if(!e) return;
     document.getElementById('diaryContent').value = e.diary || '';
     const content = e.diary || '';
-    if(!content) document.getElementById('diaryBroText').textContent = randomQuote('diary');
-    else if(content.length<20) document.getElementById('diaryBroText').textContent = '再写一点吧，哥哥想看更多~';
-    else document.getElementById('diaryBroText').textContent = '写了好多呢，宝宝真用心。';
-    const mode = e.diaryBgMode || 'default';
+    // 心情识别
+    const mood = detectMood(content);
+    if(mood && broQuotes[mood]){
+      document.getElementById('diaryBroText').textContent = randomQuote(mood);
+    } else if(!content) {
+      document.getElementById('diaryBroText').textContent = randomQuote('diary');
+    } else if(content.length<20) {
+      document.getElementById('diaryBroText').textContent = '再写一点吧，哥哥想看更多~';
+    } else {
+      document.getElementById('diaryBroText').textContent = randomQuote('diary');
+    }
+    // 日记背景跟随App背景
     const page = document.getElementById('page-diary');
-    if(mode==='photo'&&e.photo){page.style.backgroundImage=`url(${e.photo})`;page.style.backgroundSize='cover';page.style.backgroundPosition='center';}
-    else if(mode==='blur'&&e.photo){page.style.backgroundImage=`url(${e.photo})`;page.style.backgroundSize='cover';page.style.backgroundPosition='center';page.style.backdropFilter='blur(6px)';}
-    else{page.style.backgroundImage='';page.style.backgroundSize='';page.style.backdropFilter='';}
-    const btn=document.getElementById('diaryBgToggle');
-    if(btn){const labels={default:'🖼️ 默认',photo:'📷 原图',blur:'🌫️ 遮罩'};btn.textContent=labels[mode]||'🖼️ 切换';}
+    page.style.backgroundImage = '';
+    page.style.backgroundSize = '';
+    page.style.backdropFilter = '';
   }
 
   function renderMilestone(){
@@ -423,50 +511,53 @@
 
   function openCardModal(){
     const e = appData.events.find(ev=>ev.id===currentEventId); if(!e) return;
-    const days=calcDays(e.date);
-    let numTxt; if(days===0)numTxt='🎉'; else numTxt=Math.abs(days);
-    const preview=document.getElementById('cardPreview');
-    if(e.photo) preview.style.backgroundImage=`url(${e.photo})`;
-    else{const bgMap={love:'linear-gradient(135deg,#fce4ec,#f8bbd0)',birthday:'linear-gradient(135deg,#fff3e0,#ffccbc)',holiday:'linear-gradient(135deg,#fffde0,#ffe082)',life:'linear-gradient(135deg,#f5f0e8,#e8dcc8)',study:'linear-gradient(135deg,#e8f0f8,#c8d8e8)',custom:'linear-gradient(135deg,#f3e5f5,#e1bee7)'};preview.style.backgroundImage=bgMap[e.category]||bgMap.custom;}
-    preview.querySelector('#cardNumber').textContent = numTxt;
-    preview.querySelector('#cardNumber').style.color = e.titleColor || '#fff';
-    preview.querySelector('#cardLabel').style.color = e.titleColor || '#fff';
-    document.getElementById('cardModal').classList.remove('hidden');
-  }
-
-  function saveCardImage(){
     const canvas = document.getElementById('cardCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 500; canvas.height = 500;
-    const e = appData.events.find(ev=>ev.id===currentEventId); if(!e) return;
     if(e.photo){
       const img = new Image();
       img.onload = function(){
         ctx.drawImage(img, 0, 0, 500, 500);
         ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.fillRect(0,0,500,500);
-        drawCardText(ctx, e);
+        finishCardPreview(ctx, e);
       };
       img.src = e.photo;
     } else {
       const bgMap={love:'#fce4ec',birthday:'#fff3e0',holiday:'#fffde0',life:'#f5f0e8',study:'#e8f0f8',custom:'#f3e5f5'};
       ctx.fillStyle=bgMap[e.category]||'#f3e5f5'; ctx.fillRect(0,0,500,500);
-      drawCardText(ctx, e);
+      finishCardPreview(ctx, e);
     }
+    function finishCardPreview(ctx, e){
+      const days=calcDays(e.date); let numTxt; if(days===0)numTxt='🎉'; else numTxt=Math.abs(days);
+      const tc = e.titleColor || '#fff';
+      ctx.fillStyle = tc; ctx.textAlign = 'center'; ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
+      ctx.font = 'bold 160px "PingFang SC","Microsoft YaHei"'; ctx.fillText(numTxt, 250, 260);
+      ctx.font = 'bold 40px "PingFang SC","Microsoft YaHei"'; ctx.fillText('天', 250, 320);
+      ctx.font = 'bold 30px "PingFang SC","Microsoft YaHei"'; ctx.fillText(e.name, 250, 390);
+      ctx.font = '24px "PingFang SC","Microsoft YaHei"'; ctx.fillText(formatDateWithWeekday(e.date), 250, 430);
+      const dataURL = canvas.toDataURL('image/png');
+      const preview = document.getElementById('cardPreview');
+      preview.style.backgroundImage = `url(${dataURL})`;
+      preview.querySelector('#cardNumber').textContent = '';
+      preview.querySelector('#cardLabel').textContent = '长按图片可保存';
+    }
+    document.getElementById('cardModal').classList.remove('hidden');
   }
 
-  function drawCardText(ctx, e){
-    const days=calcDays(e.date); let numTxt; if(days===0)numTxt='🎉'; else numTxt=Math.abs(days);
-    const tc = e.titleColor || '#fff';
-    ctx.fillStyle = tc; ctx.textAlign = 'center'; ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8;
-    ctx.font = 'bold 160px "PingFang SC","Microsoft YaHei"'; ctx.fillText(numTxt, 250, 260);
-    ctx.font = 'bold 40px "PingFang SC","Microsoft YaHei"'; ctx.fillText('天', 250, 320);
-    ctx.font = 'bold 30px "PingFang SC","Microsoft YaHei"'; ctx.fillText(e.name, 250, 390);
-    ctx.font = '24px "PingFang SC","Microsoft YaHei"'; ctx.fillText(formatDateWithWeekday(e.date), 250, 430);
-    canvas.toBlob(function(blob){
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `${e.name}_卡片.png`; a.click();
-      URL.revokeObjectURL(url);
-    });
+  function saveCardImage(){
+    const canvas = document.getElementById('cardCanvas');
+    try {
+      const dataURL = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `${today}_卡片.png`;
+      link.href = dataURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      alert('✅ 卡片已保存到相册！');
+    } catch(err) {
+      alert('保存失败，请尝试长按预览图手动保存。');
+    }
   }
 
   function exportData(){
@@ -498,6 +589,53 @@
     } else { bro.textContent = '🧸'; }
   }
 
+  // ========== 点击特效执行（增加萤火虫、水波纹、碎钻） ==========
+  document.addEventListener('click',function(e){
+    if(e.target.closest('button')||e.target.closest('input')||e.target.closest('select')||e.target.closest('textarea')||e.target.closest('.modal-overlay'))return;
+    if(appData.clickEffect==='none')return;
+    const eff=effects.find(ef=>ef.id===appData.clickEffect);if(!eff)return;
+
+    if(eff.type==='ripple'){
+      const ripple=document.createElement('div');ripple.className='ripple';
+      ripple.style.left=e.clientX+'px';ripple.style.top=e.clientY+'px';
+      ripple.style.borderColor=eff.color;
+      document.body.appendChild(ripple);setTimeout(()=>ripple.remove(),1000);
+      return;
+    }
+
+    if(eff.type==='firefly'){
+      const count=6;
+      for(let i=0;i<count;i++){
+        const p=document.createElement('div');p.className='click-particle';
+        const angle=(Math.PI*2*i)/count+Math.random()*0.5,dist=20+Math.random()*50;
+        p.style.cssText=`left:${e.clientX}px;top:${e.clientY}px;width:6px;height:6px;background:#ccff00;border-radius:50%;box-shadow:0 0 10px #ccff00;--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;animation-duration:${1+Math.random()}s`;
+        document.body.appendChild(p);setTimeout(()=>p.remove(),1200);
+      }
+      return;
+    }
+
+    if(eff.type==='diamond'){
+      const count=10;
+      for(let i=0;i<count;i++){
+        const p=document.createElement('div');p.className='click-particle';
+        const angle=(Math.PI*2*i)/count,dist=25+Math.random()*55;
+        const size=4+Math.random()*8;
+        p.style.cssText=`left:${e.clientX}px;top:${e.clientY}px;width:${size}px;height:${size}px;background:#fff;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;animation-duration:0.9s`;
+        document.body.appendChild(p);setTimeout(()=>p.remove(),1000);
+      }
+      return;
+    }
+
+    const count=eff.type==='pattern'?8:12;
+    for(let i=0;i<count;i++){
+      const p=document.createElement('div');p.className='click-particle';
+      const angle=(Math.PI*2*i)/count,dist=30+Math.random()*60;
+      p.style.cssText=`left:${e.clientX}px;top:${e.clientY}px;font-size:${14+Math.random()*16}px;--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;${eff.type==='pattern'?'':`width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;background:${eff.color==='random'?`hsl(${Math.random()*360},80%,60%)`:eff.color};border-radius:50%`}`;
+      if(eff.type==='pattern')p.textContent=eff.emoji;
+      document.body.appendChild(p);setTimeout(()=>p.remove(),800);
+    }
+  });
+
   // ========== 事件绑定 ==========
   document.getElementById('broEmoji').addEventListener('click',function(e){
     const heart=document.createElement('span');heart.textContent='💖';heart.className='heart-particle';
@@ -506,7 +644,9 @@
     const quotes = [getTimeGreeting(), randomQuote('home'), randomQuote('life'), randomQuote('love'),
       '宝宝今天真可爱~','哥哥好想你呀','戳戳哥哥会让哥哥开心一整天','今天有什么想和哥哥分享的吗？',
       '不管什么时候，哥哥都在这里','你是哥哥最珍贵的宝贝','每一天都要开开心心的哦','哥哥最喜欢看你笑了',
-      '宝宝最近越来越棒了','看到你哥哥就觉得好幸福','今天也要元气满满呀','记得多喝水哦宝宝'];
+      '宝宝最近越来越棒了','看到你哥哥就觉得好幸福','今天也要元气满满呀','记得多喝水哦宝宝',
+      '哥哥永远在这里等你','你的笑容是哥哥最想守护的东西','今天有什么开心的事吗？说给哥哥听听',
+      '不管外面怎么样，哥哥这里永远是宝宝的避风港'];
     document.getElementById('homeBroText').textContent = quotes[Math.floor(Math.random()*quotes.length)];
   });
 
@@ -547,13 +687,12 @@
   document.getElementById('saveDiaryBtn').addEventListener('click',function(){
     const e=appData.events.find(ev=>ev.id===currentEventId);if(!e)return;
     e.diary=document.getElementById('diaryContent').value;save();
-    document.getElementById('diaryBroText').textContent='日记已保存！这些回忆，哥哥帮你守着。';
-  });
-
-  document.getElementById('diaryBgToggle').addEventListener('click',function(){
-    const e=appData.events.find(ev=>ev.id===currentEventId);if(!e)return;
-    const modes=['default','photo','blur'];const cur=modes.indexOf(e.diaryBgMode||'default');
-    e.diaryBgMode=modes[(cur+1)%3];save();renderDiary();
+    const mood = detectMood(e.diary);
+    if(mood && broQuotes[mood]){
+      document.getElementById('diaryBroText').textContent = randomQuote(mood);
+    } else {
+      document.getElementById('diaryBroText').textContent='日记已保存！这些回忆，哥哥帮你守着。';
+    }
   });
 
   document.getElementById('changePhotoBtn').addEventListener('click',function(){
@@ -580,7 +719,7 @@
     const calendarType=document.getElementById('calendarType').value;
     const endDate=document.getElementById('eventEndDateInput').value;
     if(!name||!date){alert('请填写名称和日期');return;}
-    appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,photo:null,diary:'',pinned:false,titleColor:'#fff',diaryBgMode:'default'});
+    appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,photo:null,diary:'',pinned:false,titleColor:'#fff'});
     save();document.getElementById('addEventModal').classList.add('hidden');renderHome();updateBroEmoji();
   });
 
@@ -596,20 +735,6 @@
   document.getElementById('exportDataBtn').addEventListener('click',exportData);
   document.getElementById('importDataBtn').addEventListener('click',function(){document.getElementById('importFileInput').click();});
   document.getElementById('importFileInput').addEventListener('change',function(ev){const f=ev.target.files[0];if(f)importData(f);});
-
-  document.addEventListener('click',function(e){
-    if(e.target.closest('button')||e.target.closest('input')||e.target.closest('select')||e.target.closest('textarea')||e.target.closest('.modal-overlay'))return;
-    if(appData.clickEffect==='none')return;
-    const eff=effects.find(ef=>ef.id===appData.clickEffect);if(!eff)return;
-    const count=eff.type==='pattern'?8:12;
-    for(let i=0;i<count;i++){
-      const p=document.createElement('div');p.className='click-particle';
-      const angle=(Math.PI*2*i)/count,dist=30+Math.random()*60;
-      p.style.cssText=`left:${e.clientX}px;top:${e.clientY}px;font-size:${14+Math.random()*16}px;--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;${eff.type==='pattern'?'':`width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;background:${eff.color==='random'?`hsl(${Math.random()*360},80%,60%)`:eff.color};border-radius:50%`}`;
-      if(eff.type==='pattern')p.textContent=eff.emoji;
-      document.body.appendChild(p);setTimeout(()=>p.remove(),800);
-    }
-  });
 
   document.getElementById('addEventModal').addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});
   document.getElementById('milestoneModal').addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});
