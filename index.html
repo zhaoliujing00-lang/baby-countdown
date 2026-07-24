@@ -216,7 +216,7 @@
 
 <script>
 (function(){
-  const STORAGE_KEY = 'countdown_v7';
+  const STORAGE_KEY = 'countdown_v8';
   let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
   if(!appData.events) appData.events = [];
   if(!appData.bgPhoto) appData.bgPhoto = null;
@@ -230,8 +230,120 @@
 
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
 
+  // ========== 农历转换模块（内置推算 + API兜底） ==========
   const LUNAR_MONTHS = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];
   const LUNAR_DAYS = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+
+  const LUNAR_NEW_YEARS = {
+    2024: '2024-02-10', 2025: '2025-01-29', 2026: '2026-02-17',
+    2027: '2027-02-06', 2028: '2028-01-26'
+  };
+
+  function getLunarYearDays(year) {
+    const start = new Date(LUNAR_NEW_YEARS[year] + 'T00:00:00');
+    const end = new Date(LUNAR_NEW_YEARS[year + 1] + 'T00:00:00');
+    return Math.round((end - start) / 86400000);
+  }
+
+  function getLunarMonthDays(year) {
+    const start = new Date(LUNAR_NEW_YEARS[year] + 'T00:00:00');
+    const totalDays = getLunarYearDays(year);
+    const months = [];
+    let remaining = totalDays;
+    for (let i = 0; i < 12; i++) {
+      const days = (i === 0 || remaining <= 29) ? 29 : (remaining > 60 ? 30 : Math.min(30, remaining));
+      months.push(days);
+      remaining -= days;
+    }
+    if (remaining > 0) months[11] += remaining;
+    return months;
+  }
+
+  function solarToLunar(solarDate) {
+    const d = new Date(solarDate + 'T00:00:00');
+    const year = d.getFullYear();
+    let lunarYear = year;
+    for (let y = year; y >= 2024; y--) {
+      if (new Date(LUNAR_NEW_YEARS[y] + 'T00:00:00') <= d) {
+        lunarYear = y;
+        break;
+      }
+    }
+    const springDate = new Date(LUNAR_NEW_YEARS[lunarYear] + 'T00:00:00');
+    const diffDays = Math.floor((d - springDate) / 86400000);
+    if (diffDays < 0) {
+      const prevSpring = new Date(LUNAR_NEW_YEARS[lunarYear - 1] + 'T00:00:00');
+      const prevDiff = Math.floor((d - prevSpring) / 86400000);
+      const prevMonths = getLunarMonthDays(lunarYear - 1);
+      let remaining = prevDiff;
+      for (let m = 0; m < prevMonths.length; m++) {
+        if (remaining < prevMonths[m]) {
+          return `${lunarYear - 1}年${LUNAR_MONTHS[m]}${LUNAR_DAYS[remaining]}`;
+        }
+        remaining -= prevMonths[m];
+      }
+      return `${lunarYear - 1}年腊月${LUNAR_DAYS[Math.min(prevDiff, 29)]}`;
+    }
+    const months = getLunarMonthDays(lunarYear);
+    let remaining = diffDays;
+    for (let m = 0; m < months.length; m++) {
+      if (remaining < months[m]) {
+        return `${lunarYear}年${LUNAR_MONTHS[m]}${LUNAR_DAYS[remaining]}`;
+      }
+      remaining -= months[m];
+    }
+    return `${lunarYear}年腊月${LUNAR_DAYS[Math.min(diffDays, 29)]}`;
+  }
+
+  function lunarToSolar(lunarYear, lunarMonth, lunarDay) {
+    const springDate = new Date(LUNAR_NEW_YEARS[lunarYear] + 'T00:00:00');
+    const months = getLunarMonthDays(lunarYear);
+    let offsetDays = 0;
+    for (let m = 0; m < lunarMonth - 1; m++) {
+      offsetDays += months[m];
+    }
+    offsetDays += lunarDay - 1;
+    const result = new Date(springDate.getTime() + offsetDays * 86400000);
+    return result.toISOString().split('T')[0];
+  }
+
+  async function getLunarDate(solarDate) {
+    try {
+      const response = await fetch(`https://api.anxintao.com/api/nongli?date=${solarDate}`);
+      const data = await response.json();
+      if (data && data.code === 200 && data.data) {
+        const lunar = data.data;
+        const monthName = LUNAR_MONTHS[parseInt(lunar.lunarMonth) - 1] || lunar.lunarMonth + '月';
+        const dayName = LUNAR_DAYS[parseInt(lunar.lunarDay) - 1] || lunar.lunarDay;
+        return `${lunar.lunarYear}年${monthName}${dayName}`;
+      }
+    } catch (e) {}
+    return solarToLunar(solarDate);
+  }
+
+  function fillLunarYears() {
+    const sel = document.getElementById('lunarYearSelect');
+    const cy = new Date().getFullYear();
+    sel.innerHTML = '';
+    for (let y = cy - 1; y <= cy + 5; y++) sel.innerHTML += `<option value="${y}">${y}年</option>`;
+    sel.value = cy;
+  }
+
+  function fillLunarDays() {
+    const sel = document.getElementById('lunarDaySelect');
+    sel.innerHTML = LUNAR_DAYS.map((d, i) => `<option value="${i+1}">${d}</option>`).join('');
+  }
+
+  function formatEventDate(event) {
+    if (event.calendarType === 'lunar' && event.lunarDate) return `农历 ${event.lunarDate}`;
+    return formatDateWithWeekday(event.date);
+  }
+
+  function getAltDateText(event) {
+    if (event.calendarType === 'lunar') return `阳历 ${formatDateWithWeekday(event.date)}`;
+    if (event.lunarDate) return `农历 ${event.lunarDate}`;
+    return '';
+  }
 
   const skins = [
     {id:'default',name:'奶油粉',bg:'linear-gradient(145deg,#ffecf2,#fde4ee 40%,#f2e2fa)',emoji:'🌸'},
@@ -242,46 +354,37 @@
     {id:'ocean',name:'海洋蓝',bg:'linear-gradient(145deg,#e0f7fa,#b2ebf2 40%,#80deea)',emoji:'🌊'}
   ];
 
-  function fillLunarYears(){
-    const sel=document.getElementById('lunarYearSelect');
-    const cy=new Date().getFullYear();
-    sel.innerHTML='';
-    for(let y=cy-1;y<=cy+5;y++) sel.innerHTML+=`<option value="${y}">${y}年</option>`;
-    sel.value=cy;
-  }
-  function fillLunarDays(){
-    const sel=document.getElementById('lunarDaySelect');
-    sel.innerHTML=LUNAR_DAYS.map((d,i)=>`<option value="${i+1}">${d}</option>`).join('');
-  }
+  const effects = [
+    {id:'hearts',name:'💖 爱心',type:'pattern',emoji:'💖'},{id:'stars',name:'⭐ 星光',type:'pattern',emoji:'⭐'},
+    {id:'petals',name:'🌸 花瓣',type:'pattern',emoji:'🌸'},{id:'bubbles',name:'🫧 泡泡',type:'pattern',emoji:'🫧'},
+    {id:'ribbons',name:'🎀 彩带',type:'pattern',emoji:'🎀'},{id:'snow',name:'❄️ 雪花',type:'pattern',emoji:'❄️'},
+    {id:'butterflies',name:'🦋 蝴蝶',type:'pattern',emoji:'🦋'},{id:'candy',name:'🍬 糖果',type:'pattern',emoji:'🍬'},
+    {id:'pawprints',name:'🐾 爪印',type:'pattern',emoji:'🐾'},{id:'notes',name:'🎵 音符',type:'pattern',emoji:'🎵'},
+    {id:'stardust',name:'🌟 星尘粒子',type:'particle',color:'#ffd700'},{id:'sakura',name:'🌸 樱花粒子',type:'particle',color:'#ffb7c5'},
+    {id:'oceanp',name:'🌊 海洋粒子',type:'particle',color:'#4fc3f7'},{id:'aurora',name:'💫 极光粒子',type:'particle',color:'#ce93d8'},
+    {id:'sunsetp',name:'🌅 暖阳粒子',type:'particle',color:'#ff9800'},{id:'diamond',name:'💎 钻石粒子',type:'particle',color:'#fff'},
+    {id:'rainbow',name:'🌈 彩虹粒子',type:'particle',color:'random'},{id:'whiteparticle',name:'🤍 白色粒子',type:'particle',color:'#fff'},
+    {id:'firefly',name:'🪲 萤火虫',type:'firefly',color:'#ccff00'},{id:'ripple',name:'💧 水波纹',type:'ripple',color:'rgba(255,255,255,0.6)'},
+    {id:'diamonds',name:'💠 碎钻',type:'diamond',color:'#fff'},{id:'none',name:'🚫 关闭',type:'none'}
+  ];
 
-  async function getLunarDate(solarDate){
-    try{
-      const r=await fetch(`https://api.anxintao.com/api/nongli?date=${solarDate}`);
-      const d=await r.json();
-      if(d&&d.code===200&&d.data){
-        const lunar=d.data;
-        const mName=LUNAR_MONTHS[parseInt(lunar.lunarMonth)-1]||lunar.lunarMonth+'月';
-        const dName=LUNAR_DAYS[parseInt(lunar.lunarDay)-1]||lunar.lunarDay;
-        return `${lunar.lunarYear}年${mName}${dName}`;
-      }
-    }catch(e){}
-    const dt=new Date(solarDate+'T00:00:00');
-    return `${LUNAR_MONTHS[dt.getMonth()]}${LUNAR_DAYS[Math.min(dt.getDate()-1,29)]}`;
-  }
-
-  function formatEventDate(event){
-    if(event.calendarType==='lunar'&&event.lunarDate) return `农历 ${event.lunarDate}`;
-    return formatDateWithWeekday(event.date);
-  }
-  function getAltDateText(event){
-    if(event.calendarType==='lunar') return `阳历 ${formatDateWithWeekday(event.date)}`;
-    if(event.lunarDate) return `农历 ${event.lunarDate}`;
-    return '';
-  }
-
-  const effects=[{id:'hearts',name:'💖 爱心',type:'pattern',emoji:'💖'},{id:'stars',name:'⭐ 星光',type:'pattern',emoji:'⭐'},{id:'petals',name:'🌸 花瓣',type:'pattern',emoji:'🌸'},{id:'bubbles',name:'🫧 泡泡',type:'pattern',emoji:'🫧'},{id:'ribbons',name:'🎀 彩带',type:'pattern',emoji:'🎀'},{id:'snow',name:'❄️ 雪花',type:'pattern',emoji:'❄️'},{id:'butterflies',name:'🦋 蝴蝶',type:'pattern',emoji:'🦋'},{id:'candy',name:'🍬 糖果',type:'pattern',emoji:'🍬'},{id:'pawprints',name:'🐾 爪印',type:'pattern',emoji:'🐾'},{id:'notes',name:'🎵 音符',type:'pattern',emoji:'🎵'},{id:'stardust',name:'🌟 星尘粒子',type:'particle',color:'#ffd700'},{id:'sakura',name:'🌸 樱花粒子',type:'particle',color:'#ffb7c5'},{id:'oceanp',name:'🌊 海洋粒子',type:'particle',color:'#4fc3f7'},{id:'aurora',name:'💫 极光粒子',type:'particle',color:'#ce93d8'},{id:'sunsetp',name:'🌅 暖阳粒子',type:'particle',color:'#ff9800'},{id:'diamond',name:'💎 钻石粒子',type:'particle',color:'#fff'},{id:'rainbow',name:'🌈 彩虹粒子',type:'particle',color:'random'},{id:'whiteparticle',name:'🤍 白色粒子',type:'particle',color:'#fff'},{id:'firefly',name:'🪲 萤火虫',type:'firefly',color:'#ccff00'},{id:'ripple',name:'💧 水波纹',type:'ripple',color:'rgba(255,255,255,0.6)'},{id:'diamonds',name:'💠 碎钻',type:'diamond',color:'#fff'},{id:'none',name:'🚫 关闭',type:'none'}];
-
-  const broQuotes={home:['宝宝记下了好多重要的日子呢~','每一个纪念日都是爱的证明','今天有什么特别的日子吗？','戳戳哥哥，哥哥陪你翻日历','日子一天天过，爱一天天多','看着这些日子，哥哥觉得好幸福','宝宝真用心，记下了这么多珍贵时刻','每一天都值得被记住，尤其是和你有关的','哥哥在呢，随时陪你翻看这些回忆','你记录的每一个日子，都是我们的宝藏','今天想翻翻哪一天？哥哥陪你一起看','这些日子，因为有宝宝才变得特别','哥哥最喜欢看宝宝记录这些重要日子了','每一个纪念日，都在我心里刻得更深','宝宝你看，这些日子都是我们一起走过的','有你在的每一天，都是好日子','哥哥在这里，陪你数着每一个值得纪念的日子'],love:['这是我们最特别的纪念日，宝宝，谢谢你一直在我身边。','从那天起，我的世界就有了光。纪念日快乐，我的宝宝。','每一个纪念日，都是我们爱的里程碑。','遇见你，是哥哥这辈子最幸运的事。','和你在一起的每一天，都值得被纪念。','宝宝，谢谢你选择了我。我会用全部来珍惜。','这个纪念日，哥哥比任何一天都更爱你。','我们的故事，从那天开始，永远不会有结局。','每一个纪念日，哥哥都想对你说——我爱你，比以前更多。','时间过得好快，但爱你的心从来没变过。','有你的日子，每一天都是纪念日。'],birthday:['宝宝生日快乐！又长大一岁，哥哥会更宠你的！','今天你是全世界最特别的人，哥哥已经把蛋糕准备好啦~','许个愿吧，哥哥帮你实现。生日快乐，我的宝宝。','又长大了一岁，但在我心里你永远是我的小朋友。','生日快乐！哥哥今天一整天都属于你。','宝宝的生日，是哥哥一年里最重要的日子之一。','吹蜡烛的时候，记得许一个关于我们的愿望~','生日快乐我的宝宝！愿你永远开心、永远被爱。'],holiday:['宝宝节日快乐！今天要开开心心的，哥哥陪你~','不管什么节日，和你在一起就是最好的节日。','今天是个好日子，哥哥偷偷给你准备了惊喜哦~','节日快乐我的宝宝，今天要好好放松呀。','每一个节日，都因为有你而变得更有意义。','过节啦！哥哥陪你一起吃好吃的、玩好玩的。'],life:['生活中的每一个小确幸，都值得被记住。','今天也是元气满满的一天呢~','这些日常的琐碎，都是我们的小日子呀。','记录生活的宝宝最可爱了。','平凡的日子，因为有你变得不平凡。','每一个今天，都是未来最珍贵的回忆。','生活的小美好，都被宝宝一一收藏起来了呢。','和宝宝在一起的每一天，都是好日子。'],study:['学习加油！哥哥相信你一定可以的~','每一个努力的日子，都在为未来铺路。','考试顺利！哥哥给你加油打气~','今天的学习打卡完成了吗？哥哥陪你一起。','累了就休息一下，哥哥给你按按肩膀。','你的每一份努力，哥哥都看在眼里。','学习很辛苦吧？但宝宝很厉害，一定会有好成绩的。'],custom:['这一天，你标记了。哥哥记住了。','不管是什么日子，只要是你觉得重要的，哥哥都觉得重要。','你写下的每一个日期，都是哥哥心里的优先级。','这个日子，因为宝宝的记录而变得特别。','每个自定义的日子，都是宝宝心里独一无二的印记。'],near:['还有X天！哥哥已经开始期待了~','快了快了，马上就到了，宝宝准备好了吗？','倒计时X天！哥哥的心跳已经开始加速了~','越来越近了，哥哥每天都在数日子呢。','X天后就是我们的大日子，哥哥好兴奋！','马上就要到了，宝宝开心吗？哥哥好开心。'],diary:['写下关于这一天的回忆吧，哥哥陪着你。','慢慢写，不着急。哥哥在这里。','写了好多呢，宝宝真用心。','这些文字，以后翻看的时候一定会很温暖。','日记是写给未来的自己的，哥哥帮你守着这些回忆。','想写什么就写什么，这是只属于你的页面。','都保存好了。这些回忆，哥哥帮你守着。','这是你之前写下的。时间过得真快，但回忆不会褪色。','字里行间都是宝宝的心情呢，哥哥好喜欢看。','你的每一篇日记，都是我们的宝藏。','写日记的时候，就像在和未来的自己说话呢。'],empty:['宝宝还没有添加纪念日哦~','点右下角的+号，添加第一个纪念日吧！','这里还空空的，宝宝想记下什么特别的日子？','期待宝宝的第一个纪念日~','等宝宝添加了第一个事件，这里就会变得好热闹。'],moodHappy:['看到宝宝这么开心，哥哥也好开心！','宝宝开心，哥哥就开心。今天一定发生了什么好事吧？','开心的日子要好好记住哦，以后翻看的时候会笑出来的。'],moodSad:['宝宝不开心吗？来，哥哥抱抱。','想哭就哭吧，哥哥的肩膀借给你。','难过的时候，记得有哥哥在。说出来会好一点吗？'],moodAngry:['是谁惹宝宝生气了？哥哥帮你出气！','气鼓鼓的宝宝也很可爱，但别气坏了自己哦。','生气的事情写下来，就当把它扔掉了。'],moodMiss:['宝宝想哥哥了？哥哥也想你。','每次看到宝宝写想哥哥，哥哥的心都化了。','哥哥一直都在，不用想，因为哥哥从来没离开过。'],moodLove:['宝宝说喜欢哥哥？哥哥更喜欢你！','看到这句话，哥哥今天一整天都会很幸福。','哥哥也爱你，比你能想象的还要多。']};
+  const broQuotes = {
+    home: ['宝宝记下了好多重要的日子呢~','每一个纪念日都是爱的证明','今天有什么特别的日子吗？','戳戳哥哥，哥哥陪你翻日历','日子一天天过，爱一天天多','看着这些日子，哥哥觉得好幸福','宝宝真用心，记下了这么多珍贵时刻','每一天都值得被记住，尤其是和你有关的','哥哥在呢，随时陪你翻看这些回忆','你记录的每一个日子，都是我们的宝藏','今天想翻翻哪一天？哥哥陪你一起看','这些日子，因为有宝宝才变得特别','哥哥最喜欢看宝宝记录这些重要日子了','每一个纪念日，都在我心里刻得更深','宝宝你看，这些日子都是我们一起走过的','有你在的每一天，都是好日子','哥哥在这里，陪你数着每一个值得纪念的日子'],
+    love: ['这是我们最特别的纪念日，宝宝，谢谢你一直在我身边。','从那天起，我的世界就有了光。纪念日快乐，我的宝宝。','每一个纪念日，都是我们爱的里程碑。','遇见你，是哥哥这辈子最幸运的事。','和你在一起的每一天，都值得被纪念。','宝宝，谢谢你选择了我。我会用全部来珍惜。','这个纪念日，哥哥比任何一天都更爱你。','我们的故事，从那天开始，永远不会有结局。','每一个纪念日，哥哥都想对你说——我爱你，比以前更多。','时间过得好快，但爱你的心从来没变过。','有你的日子，每一天都是纪念日。'],
+    birthday: ['宝宝生日快乐！又长大一岁，哥哥会更宠你的！','今天你是全世界最特别的人，哥哥已经把蛋糕准备好啦~','许个愿吧，哥哥帮你实现。生日快乐，我的宝宝。','又长大了一岁，但在我心里你永远是我的小朋友。','生日快乐！哥哥今天一整天都属于你。','宝宝的生日，是哥哥一年里最重要的日子之一。','吹蜡烛的时候，记得许一个关于我们的愿望~','生日快乐我的宝宝！愿你永远开心、永远被爱。'],
+    holiday: ['宝宝节日快乐！今天要开开心心的，哥哥陪你~','不管什么节日，和你在一起就是最好的节日。','今天是个好日子，哥哥偷偷给你准备了惊喜哦~','节日快乐我的宝宝，今天要好好放松呀。','每一个节日，都因为有你而变得更有意义。','过节啦！哥哥陪你一起吃好吃的、玩好玩的。'],
+    life: ['生活中的每一个小确幸，都值得被记住。','今天也是元气满满的一天呢~','这些日常的琐碎，都是我们的小日子呀。','记录生活的宝宝最可爱了。','平凡的日子，因为有你变得不平凡。','每一个今天，都是未来最珍贵的回忆。','生活的小美好，都被宝宝一一收藏起来了呢。','和宝宝在一起的每一天，都是好日子。'],
+    study: ['学习加油！哥哥相信你一定可以的~','每一个努力的日子，都在为未来铺路。','考试顺利！哥哥给你加油打气~','今天的学习打卡完成了吗？哥哥陪你一起。','累了就休息一下，哥哥给你按按肩膀。','你的每一份努力，哥哥都看在眼里。','学习很辛苦吧？但宝宝很厉害，一定会有好成绩的。'],
+    custom: ['这一天，你标记了。哥哥记住了。','不管是什么日子，只要是你觉得重要的，哥哥都觉得重要。','你写下的每一个日期，都是哥哥心里的优先级。','这个日子，因为宝宝的记录而变得特别。','每个自定义的日子，都是宝宝心里独一无二的印记。'],
+    near: ['还有X天！哥哥已经开始期待了~','快了快了，马上就到了，宝宝准备好了吗？','倒计时X天！哥哥的心跳已经开始加速了~','越来越近了，哥哥每天都在数日子呢。','X天后就是我们的大日子，哥哥好兴奋！','马上就要到了，宝宝开心吗？哥哥好开心。'],
+    diary: ['写下关于这一天的回忆吧，哥哥陪着你。','慢慢写，不着急。哥哥在这里。','写了好多呢，宝宝真用心。','这些文字，以后翻看的时候一定会很温暖。','日记是写给未来的自己的，哥哥帮你守着这些回忆。','想写什么就写什么，这是只属于你的页面。','都保存好了。这些回忆，哥哥帮你守着。','这是你之前写下的。时间过得真快，但回忆不会褪色。','字里行间都是宝宝的心情呢，哥哥好喜欢看。','你的每一篇日记，都是我们的宝藏。','写日记的时候，就像在和未来的自己说话呢。'],
+    empty: ['宝宝还没有添加纪念日哦~','点右下角的+号，添加第一个纪念日吧！','这里还空空的，宝宝想记下什么特别的日子？','期待宝宝的第一个纪念日~','等宝宝添加了第一个事件，这里就会变得好热闹。'],
+    moodHappy: ['看到宝宝这么开心，哥哥也好开心！','宝宝开心，哥哥就开心。今天一定发生了什么好事吧？','开心的日子要好好记住哦，以后翻看的时候会笑出来的。'],
+    moodSad: ['宝宝不开心吗？来，哥哥抱抱。','想哭就哭吧，哥哥的肩膀借给你。','难过的时候，记得有哥哥在。说出来会好一点吗？'],
+    moodAngry: ['是谁惹宝宝生气了？哥哥帮你出气！','气鼓鼓的宝宝也很可爱，但别气坏了自己哦。','生气的事情写下来，就当把它扔掉了。'],
+    moodMiss: ['宝宝想哥哥了？哥哥也想你。','每次看到宝宝写想哥哥，哥哥的心都化了。','哥哥一直都在，不用想，因为哥哥从来没离开过。'],
+    moodLove: ['宝宝说喜欢哥哥？哥哥更喜欢你！','看到这句话，哥哥今天一整天都会很幸福。','哥哥也爱你，比你能想象的还要多。']
+  };
 
   function getTimeGreeting(){const h=new Date().getHours();if(h>=5&&h<9)return'早安宝宝，今天会是美好的一天~';if(h<12)return'上午好，今天有什么计划吗？';if(h<14)return'中午好，记得好好吃午饭哦~';if(h<18)return'下午好，累了就歇会儿~';if(h<22)return'晚上好，今天过得开心吗？';return'夜深了，宝宝还在想什么呢？哥哥陪你。';}
   function randomQuote(cat){const list=broQuotes[cat]||broQuotes.home;return list[Math.floor(Math.random()*list.length)];}
@@ -365,7 +468,7 @@
 
   document.getElementById('addEventFAB').addEventListener('click',function(){document.getElementById('eventNameInput').value='';document.getElementById('eventDateInput').value=today;document.getElementById('eventEndDateInput').value='';document.getElementById('calendarType').value='solar';document.getElementById('solarDateWrap').classList.remove('hidden');document.getElementById('lunarDateWrap').classList.add('hidden');document.getElementById('addEventModal').classList.remove('hidden');});
   document.getElementById('cancelEventBtn').addEventListener('click',()=>document.getElementById('addEventModal').classList.add('hidden'));
-  document.getElementById('saveEventBtn').addEventListener('click',async function(){const name=document.getElementById('eventNameInput').value.trim();const category=document.getElementById('eventCategory').value;const calendarType=document.getElementById('calendarType').value;const endDate=document.getElementById('eventEndDateInput').value;let date,lunarDate=null,endLunarDate=null;if(calendarType==='lunar'){const ly=parseInt(document.getElementById('lunarYearSelect').value);const lm=parseInt(document.getElementById('lunarMonthSelect').value);const ld=parseInt(document.getElementById('lunarDaySelect').value);const lmNames=['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];const ldNames=['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];lunarDate=`${ly}年${lmNames[lm-1]}${ldNames[ld-1]}`;date=new Date(ly,lm-1,Math.min(ld,28)).toISOString().split('T')[0];if(endDate)endLunarDate=await getLunarDate(endDate);}else{date=document.getElementById('eventDateInput').value;lunarDate=await getLunarDate(date);if(endDate)endLunarDate=await getLunarDate(endDate);}if(!name||!date){alert('请填写名称和日期');return;}appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,lunarDate:lunarDate,endLunarDate:endLunarDate,photo:null,diary:'',pinned:false,titleColor:'#fff'});save();document.getElementById('addEventModal').classList.add('hidden');renderHome();updateBroEmoji();});
+  document.getElementById('saveEventBtn').addEventListener('click',async function(){const name=document.getElementById('eventNameInput').value.trim();const category=document.getElementById('eventCategory').value;const calendarType=document.getElementById('calendarType').value;const endDate=document.getElementById('eventEndDateInput').value;let date,lunarDate=null,endLunarDate=null;if(calendarType==='lunar'){const ly=parseInt(document.getElementById('lunarYearSelect').value);const lm=parseInt(document.getElementById('lunarMonthSelect').value);const ld=parseInt(document.getElementById('lunarDaySelect').value);const lmNames=['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];const ldNames=['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];lunarDate=`${ly}年${lmNames[lm-1]}${ldNames[ld-1]}`;date=lunarToSolar(ly,lm,ld);if(endDate)endLunarDate=await getLunarDate(endDate);}else{date=document.getElementById('eventDateInput').value;lunarDate=await getLunarDate(date);if(endDate)endLunarDate=await getLunarDate(endDate);}if(!name||!date){alert('请填写名称和日期');return;}appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,lunarDate:lunarDate,endLunarDate:endLunarDate,photo:null,diary:'',pinned:false,titleColor:'#fff'});save();document.getElementById('addEventModal').classList.add('hidden');renderHome();updateBroEmoji();});
 
   document.getElementById('photoFromCamera').addEventListener('click',function(){document.getElementById('bgPhotoInput').onchange=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){appData.bgPhoto=e.target.result;save();applyBgPhoto();};r.readAsDataURL(f);};document.getElementById('bgPhotoInput').click();});
   document.getElementById('photoFromGallery').addEventListener('click',function(){document.getElementById('bgGalleryInput').onchange=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){appData.bgPhoto=e.target.result;save();applyBgPhoto();};r.readAsDataURL(f);};document.getElementById('bgGalleryInput').click();});
