@@ -216,7 +216,7 @@
 
 <script>
 (function(){
-  const STORAGE_KEY = 'countdown_v9';
+  const STORAGE_KEY = 'countdown_v10';
   let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
   if(!appData.events) appData.events = [];
   if(!appData.bgPhoto) appData.bgPhoto = null;
@@ -229,140 +229,133 @@
   let searchQuery = '';
 
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
-// ========== 农历转换模块 ==========
-const LUNAR_MONTHS = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];
-const LUNAR_DAYS = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
 
-// 农历数据：每年春节对应的阳历日期，以及该年每个月的天数
-const LUNAR_DATA = {
-  2024: { spring: '2024-02-10', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-  2025: { spring: '2025-01-29', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-  2026: { spring: '2026-02-17', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-  2027: { spring: '2027-02-06', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-  2028: { spring: '2028-01-26', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-  2029: { spring: '2029-02-13', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-  2030: { spring: '2030-02-03', months: [30,29,30,29,30,29,30,29,30,29,30,29] }
-};
+  // ========== 农历转换模块 ==========
+  const LUNAR_MONTHS = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];
+  const LUNAR_DAYS = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
 
-// 计算某个农历日期距离当年春节的天数偏移
-function getLunarDayOffset(lunarYear, lunarMonth, lunarDay) {
-  const data = LUNAR_DATA[lunarYear];
-  if (!data) {
-    // 超出数据范围，使用近似推算
-    return (lunarMonth - 1) * 30 + (lunarDay - 1);
+  const LUNAR_DATA = {
+    2024: { spring: '2024-02-10', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2025: { spring: '2025-01-29', months: [30,29,30,29,29,30,29,30,29,30,29,30] },
+    2026: { spring: '2026-02-17', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2027: { spring: '2027-02-06', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2028: { spring: '2028-01-26', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2029: { spring: '2029-02-13', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2030: { spring: '2030-02-03', months: [30,29,30,29,30,29,30,29,30,29,30,29] }
+  };
+
+  function getLunarDayOffset(lunarYear, lunarMonth, lunarDay) {
+    const data = LUNAR_DATA[lunarYear];
+    if (!data) { return (lunarMonth - 1) * 30 + (lunarDay - 1); }
+    let offset = 0;
+    for (let m = 0; m < lunarMonth - 1; m++) { offset += data.months[m]; }
+    offset += lunarDay - 1;
+    return offset;
   }
-  let offset = 0;
-  for (let m = 0; m < lunarMonth - 1; m++) {
-    offset += data.months[m];
-  }
-  offset += lunarDay - 1;
-  return offset;
-}
 
-// 农历日期转阳历日期
-function lunarToSolar(lunarYear, lunarMonth, lunarDay) {
-  const data = LUNAR_DATA[lunarYear];
-  if (!data) {
-    // 超出数据范围，使用近似推算
-    const approxSpring = `${lunarYear}-02-01`;
-    const offset = (lunarMonth - 1) * 30 + (lunarDay - 1);
-    const d = new Date(approxSpring + 'T00:00:00');
-    d.setDate(d.getDate() + offset);
-    return d.toISOString().split('T')[0];
-  }
-  const springDate = new Date(data.spring + 'T00:00:00');
-  const offset = getLunarDayOffset(lunarYear, lunarMonth, lunarDay);
-  const result = new Date(springDate.getTime() + offset * 86400000);
-  return result.toISOString().split('T')[0];
-}
-
-// 阳历日期转农历日期
-function solarToLunar(solarDate) {
-  const d = new Date(solarDate + 'T00:00:00');
-  const year = d.getFullYear();
-  // 找到该日期属于哪个农历年
-  let lunarYear = year;
-  for (let y = year; y >= 2024; y--) {
-    const data = LUNAR_DATA[y];
-    if (data && new Date(data.spring + 'T00:00:00') <= d) {
-      lunarYear = y;
-      break;
+  function lunarToSolar(lunarYear, lunarMonth, lunarDay) {
+    const data = LUNAR_DATA[lunarYear];
+    if (!data) {
+      const approxSpring = `${lunarYear}-02-01`;
+      const offset = (lunarMonth - 1) * 30 + (lunarDay - 1);
+      const d = new Date(approxSpring + 'T00:00:00');
+      d.setDate(d.getDate() + offset);
+      return d.toISOString().split('T')[0];
     }
+    const springDate = new Date(data.spring + 'T00:00:00');
+    const offset = getLunarDayOffset(lunarYear, lunarMonth, lunarDay);
+    const result = new Date(springDate.getTime() + offset * 86400000);
+    return result.toISOString().split('T')[0];
   }
-  const data = LUNAR_DATA[lunarYear];
-  if (!data) {
-    // 超出数据范围
-    return `${lunarYear}年${LUNAR_MONTHS[d.getMonth()]}${LUNAR_DAYS[Math.min(d.getDate() - 1, 29)]}`;
-  }
-  const springDate = new Date(data.spring + 'T00:00:00');
-  const diffDays = Math.floor((d - springDate) / 86400000);
-  if (diffDays < 0) {
-    // 在春节之前，属于上一个农历年
-    const prevData = LUNAR_DATA[lunarYear - 1];
-    if (!prevData) {
-      return `${lunarYear - 1}年${LUNAR_MONTHS[11]}${LUNAR_DAYS[Math.min(d.getDate() - 1, 29)]}`;
+
+  function solarToLunar(solarDate) {
+    const d = new Date(solarDate + 'T00:00:00');
+    const year = d.getFullYear();
+    let lunarYear = year;
+    for (let y = year; y >= 2024; y--) {
+      const data = LUNAR_DATA[y];
+      if (data && new Date(data.spring + 'T00:00:00') <= d) { lunarYear = y; break; }
     }
-    const prevSpring = new Date(prevData.spring + 'T00:00:00');
-    const prevDiff = Math.floor((d - prevSpring) / 86400000);
-    let remaining = prevDiff;
-    for (let m = 0; m < prevData.months.length; m++) {
-      if (remaining < prevData.months[m]) {
-        return `${lunarYear - 1}年${LUNAR_MONTHS[m]}${LUNAR_DAYS[remaining]}`;
+    const data = LUNAR_DATA[lunarYear];
+    if (!data) {
+      return `${lunarYear}年${LUNAR_MONTHS[d.getMonth()]}${LUNAR_DAYS[Math.min(d.getDate() - 1, 29)]}`;
+    }
+    const springDate = new Date(data.spring + 'T00:00:00');
+    const diffDays = Math.floor((d - springDate) / 86400000);
+    if (diffDays < 0) {
+      const prevData = LUNAR_DATA[lunarYear - 1];
+      if (!prevData) {
+        return `${lunarYear - 1}年${LUNAR_MONTHS[11]}${LUNAR_DAYS[Math.min(d.getDate() - 1, 29)]}`;
       }
-      remaining -= prevData.months[m];
+      const prevSpring = new Date(prevData.spring + 'T00:00:00');
+      const prevDiff = Math.floor((d - prevSpring) / 86400000);
+      let remaining = prevDiff;
+      for (let m = 0; m < prevData.months.length; m++) {
+        if (remaining < prevData.months[m]) {
+          return `${lunarYear - 1}年${LUNAR_MONTHS[m]}${LUNAR_DAYS[remaining]}`;
+        }
+        remaining -= prevData.months[m];
+      }
+      return `${lunarYear - 1}年腊月${LUNAR_DAYS[Math.min(prevDiff, 29)]}`;
     }
-    return `${lunarYear - 1}年腊月${LUNAR_DAYS[Math.min(prevDiff, 29)]}`;
+    let remaining = diffDays;
+    for (let m = 0; m < data.months.length; m++) {
+      if (remaining < data.months[m]) {
+        return `${lunarYear}年${LUNAR_MONTHS[m]}${LUNAR_DAYS[remaining]}`;
+      }
+      remaining -= data.months[m];
+    }
+    return `${lunarYear}年腊月${LUNAR_DAYS[Math.min(diffDays, 29)]}`;
   }
-  let remaining = diffDays;
-  for (let m = 0; m < data.months.length; m++) {
-    if (remaining < data.months[m]) {
-      return `${lunarYear}年${LUNAR_MONTHS[m]}${LUNAR_DAYS[remaining]}`;
-    }
-    remaining -= data.months[m];
+
+  async function getLunarDate(solarDate) {
+    try {
+      const response = await fetch(`https://api.anxintao.com/api/nongli?date=${solarDate}`);
+      const data = await response.json();
+      if (data && data.code === 200 && data.data) {
+        const lunar = data.data;
+        const monthName = LUNAR_MONTHS[parseInt(lunar.lunarMonth) - 1] || lunar.lunarMonth + '月';
+        const dayName = LUNAR_DAYS[parseInt(lunar.lunarDay) - 1] || lunar.lunarDay;
+        return `${lunar.lunarYear}年${monthName}${dayName}`;
+      }
+    } catch (e) {}
+    return solarToLunar(solarDate);
   }
-  return `${lunarYear}年腊月${LUNAR_DAYS[Math.min(diffDays, 29)]}`;
-}
 
-// 对外接口：获取农历日期（优先API）
-async function getLunarDate(solarDate) {
-  try {
-    const response = await fetch(`https://api.anxintao.com/api/nongli?date=${solarDate}`);
-    const data = await response.json();
-    if (data && data.code === 200 && data.data) {
-      const lunar = data.data;
-      const monthName = LUNAR_MONTHS[parseInt(lunar.lunarMonth) - 1] || lunar.lunarMonth + '月';
-      const dayName = LUNAR_DAYS[parseInt(lunar.lunarDay) - 1] || lunar.lunarDay;
-      return `${lunar.lunarYear}年${monthName}${dayName}`;
-    }
-  } catch (e) {}
-  return solarToLunar(solarDate);
-}
+  async function getSolarFromLunar(lunarYear, lunarMonth, lunarDay) {
+    try {
+      const response = await fetch(`https://api.anxintao.com/api/nongli?year=${lunarYear}&month=${String(lunarMonth).padStart(2,'0')}&day=${String(lunarDay).padStart(2,'0')}&type=lunar`);
+      const data = await response.json();
+      if (data && data.code === 200 && data.data && data.data.solarDate) {
+        return data.data.solarDate;
+      }
+    } catch (e) {}
+    return lunarToSolar(lunarYear, lunarMonth, lunarDay);
+  }
 
-// 对外接口：获取阳历日期（优先API）
-async function getSolarFromLunar(lunarYear, lunarMonth, lunarDay) {
-  try {
-    const response = await fetch(`https://api.anxintao.com/api/nongli?year=${lunarYear}&month=${String(lunarMonth).padStart(2,'0')}&day=${String(lunarDay).padStart(2,'0')}&type=lunar`);
-    const data = await response.json();
-    if (data && data.code === 200 && data.data && data.data.solarDate) {
-      return data.data.solarDate;
-    }
-  } catch (e) {}
-  return lunarToSolar(lunarYear, lunarMonth, lunarDay);
-}
+  function fillLunarYears() {
+    const sel = document.getElementById('lunarYearSelect');
+    const cy = new Date().getFullYear();
+    sel.innerHTML = '';
+    for (let y = cy - 1; y <= cy + 5; y++) sel.innerHTML += `<option value="${y}">${y}年</option>`;
+    sel.value = cy;
+  }
 
-function fillLunarYears() {
-  const sel = document.getElementById('lunarYearSelect');
-  const cy = new Date().getFullYear();
-  sel.innerHTML = '';
-  for (let y = cy - 1; y <= cy + 5; y++) sel.innerHTML += `<option value="${y}">${y}年</option>`;
-  sel.value = cy;
-}
+  function fillLunarDays() {
+    const sel = document.getElementById('lunarDaySelect');
+    sel.innerHTML = LUNAR_DAYS.map((d, i) => `<option value="${i+1}">${d}</option>`).join('');
+  }
 
-function fillLunarDays() {
-  const sel = document.getElementById('lunarDaySelect');
-  sel.innerHTML = LUNAR_DAYS.map((d, i) => `<option value="${i+1}">${d}</option>`).join('');
-}
-  
+  function formatEventDate(event) {
+    if (event.calendarType === 'lunar' && event.lunarDate) return `农历 ${event.lunarDate}`;
+    return formatDateWithWeekday(event.date);
+  }
+  function getAltDateText(event) {
+    if (event.calendarType === 'lunar') return `阳历 ${formatDateWithWeekday(event.date)}`;
+    if (event.lunarDate) return `农历 ${event.lunarDate}`;
+    return '';
+  }
+
   const skins = [
     {id:'default',name:'奶油粉',bg:'linear-gradient(145deg,#ffecf2,#fde4ee 40%,#f2e2fa)',emoji:'🌸'},
     {id:'starry',name:'星空蓝',bg:'linear-gradient(145deg,#1a1a3e,#2d2d5e 40%,#1a1a4e)',emoji:'🌟'},
@@ -486,7 +479,7 @@ function fillLunarDays() {
 
   document.getElementById('addEventFAB').addEventListener('click',function(){document.getElementById('eventNameInput').value='';document.getElementById('eventDateInput').value=today;document.getElementById('eventEndDateInput').value='';document.getElementById('calendarType').value='solar';document.getElementById('solarDateWrap').classList.remove('hidden');document.getElementById('lunarDateWrap').classList.add('hidden');document.getElementById('addEventModal').classList.remove('hidden');});
   document.getElementById('cancelEventBtn').addEventListener('click',()=>document.getElementById('addEventModal').classList.add('hidden'));
-  document.getElementById('saveEventBtn').addEventListener('click',async function(){const name=document.getElementById('eventNameInput').value.trim();const category=document.getElementById('eventCategory').value;const calendarType=document.getElementById('calendarType').value;const endDate=document.getElementById('eventEndDateInput').value;let date,lunarDate=null,endLunarDate=null;if(calendarType==='lunar'){const ly=parseInt(document.getElementById('lunarYearSelect').value);const lm=parseInt(document.getElementById('lunarMonthSelect').value);const ld=parseInt(document.getElementById('lunarDaySelect').value);const lmNames=['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];const ldNames=['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];lunarDate=`${ly}年${lmNames[lm-1]}${ldNames[ld-1]}`;date=await getSolarFromLunar(ly,lm,ld);if(endDate)endLunarDate=await getLunarDate(endDate);}else{date=document.getElementById('eventDateInput').value;lunarDate=await getLunarDate(date);if(endDate)endLunarDate=await getLunarDate(endDate);}if(!name||!date){alert('请填写名称和日期');return;}appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,lunarDate:lunarDate,endLunarDate:endLunarDate,photo:null,diary:'',pinned:false,titleColor:'#fff'});save();document.getElementById('addEventModal').classList.add('hidden');renderHome();updateBroEmoji();});
+  document.getElementById('saveEventBtn').addEventListener('click',async function(){const name=document.getElementById('eventNameInput').value.trim();const category=document.getElementById('eventCategory').value;const calendarType=document.getElementById('calendarType').value;const endDate=document.getElementById('eventEndDateInput').value;let date,lunarDate=null,endLunarDate=null;try{if(calendarType==='lunar'){const ly=parseInt(document.getElementById('lunarYearSelect').value);const lm=parseInt(document.getElementById('lunarMonthSelect').value);const ld=parseInt(document.getElementById('lunarDaySelect').value);const lmNames=['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];const ldNames=['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];lunarDate=`${ly}年${lmNames[lm-1]}${ldNames[ld-1]}`;date=lunarToSolar(ly,lm,ld);if(endDate)endLunarDate=await getLunarDate(endDate);}else{date=document.getElementById('eventDateInput').value;lunarDate=await getLunarDate(date);if(endDate)endLunarDate=await getLunarDate(endDate);}if(!name||!date){alert('请填写名称和日期');return;}appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,lunarDate:lunarDate,endLunarDate:endLunarDate,photo:null,diary:'',pinned:false,titleColor:'#fff'});save();document.getElementById('addEventModal').classList.add('hidden');renderHome();updateBroEmoji();}catch(err){alert('日期转换失败，请检查农历日期是否正确');}});
 
   document.getElementById('photoFromCamera').addEventListener('click',function(){document.getElementById('bgPhotoInput').onchange=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){appData.bgPhoto=e.target.result;save();applyBgPhoto();};r.readAsDataURL(f);};document.getElementById('bgPhotoInput').click();});
   document.getElementById('photoFromGallery').addEventListener('click',function(){document.getElementById('bgGalleryInput').onchange=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){appData.bgPhoto=e.target.result;save();applyBgPhoto();};r.readAsDataURL(f);};document.getElementById('bgGalleryInput').click();});
