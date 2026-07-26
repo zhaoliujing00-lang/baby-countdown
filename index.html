@@ -216,7 +216,7 @@
 
 <script>
 (function(){
-  const STORAGE_KEY = 'countdown_final_v4';
+  const STORAGE_KEY = 'countdown_final_v5';
   let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
   if(!appData.events) appData.events = [];
   if(!appData.bgPhoto) appData.bgPhoto = null;
@@ -230,20 +230,80 @@
 
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
 
-  // ========== 农历转换模块（2026年春节已校准为2月17日） ==========
+  // ========== 农历转换模块（自动推算精确版） ==========
   const LUNAR_MONTHS = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];
   const LUNAR_DAYS = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
 
-  const LUNAR_DATA = {
-    2023: { spring: '2023-01-22', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-    2024: { spring: '2024-02-10', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-    2025: { spring: '2025-01-29', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-    2026: { spring: '2026-02-17', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-    2027: { spring: '2027-02-06', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-    2028: { spring: '2028-01-26', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-    2029: { spring: '2029-02-13', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
-    2030: { spring: '2030-02-03', months: [30,29,30,29,30,29,30,29,30,29,30,29] }
-  };
+  // 自动推算每个农历年的数据
+  const LUNAR_FORMAT = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', { year: 'numeric', month: 'numeric', day: 'numeric' });
+  function generateLunarData(startYear, endYear) {
+    const data = {};
+    for (let year = startYear; year <= endYear; year++) {
+      // 查找该年正月初一
+      let springDate = null;
+      const searchStart = new Date(year, 0, 1);
+      for (let i = 0; i < 60; i++) {
+        const d = new Date(searchStart.getTime() + i * 86400000);
+        const parts = LUNAR_FORMAT.formatToParts(d);
+        const m = parts.find(p => p.type === 'month')?.value;
+        const day = parts.find(p => p.type === 'day')?.value;
+        if (m === '1' && day === '1') {
+          springDate = d.toISOString().split('T')[0];
+          break;
+        }
+      }
+
+      // 查找该年每个月的大小
+      const months = [];
+      if (springDate) {
+        const spring = new Date(springDate + 'T00:00:00');
+        for (let m = 1; m <= 12; m++) {
+          // 找该月初一
+          let monthStart = null;
+          for (let i = 0; i < 400; i++) {
+            const d = new Date(spring.getTime() + i * 86400000);
+            const parts = LUNAR_FORMAT.formatToParts(d);
+            const monthNum = parts.find(p => p.type === 'month')?.value;
+            const dayNum = parts.find(p => p.type === 'day')?.value;
+            if (monthNum === String(m) && dayNum === '1') {
+              monthStart = d;
+              break;
+            }
+          }
+          if (monthStart) {
+            // 找下月初一，计算本月天数
+            let nextMonthStart = null;
+            for (let i = 1; i <= 35; i++) {
+              const d = new Date(monthStart.getTime() + i * 86400000);
+              const parts = LUNAR_FORMAT.formatToParts(d);
+              const monthNum = parts.find(p => p.type === 'month')?.value;
+              const dayNum = parts.find(p => p.type === 'day')?.value;
+              if (dayNum === '1' && monthNum !== String(m)) {
+                nextMonthStart = d;
+                break;
+              }
+            }
+            if (nextMonthStart) {
+              const days = Math.round((nextMonthStart - monthStart) / 86400000);
+              months.push(days);
+            } else {
+              months.push(30);
+            }
+          } else {
+            months.push(30);
+          }
+        }
+      } else {
+        months.push(30,29,30,29,30,29,30,29,30,29,30,29);
+      }
+
+      data[year] = { spring: springDate || `${year}-02-01`, months };
+    }
+    return data;
+  }
+
+  // 预生成2023-2030年数据
+  const LUNAR_DATA = generateLunarData(2023, 2030);
 
   function getLunarDayOffset(lunarYear, lunarMonth, lunarDay) {
     const data = LUNAR_DATA[lunarYear];
