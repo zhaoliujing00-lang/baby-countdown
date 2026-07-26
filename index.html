@@ -216,7 +216,7 @@
 
 <script>
 (function(){
-  const STORAGE_KEY = 'countdown_intl_v1';
+  const STORAGE_KEY = 'countdown_intl_v2';
   let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
   if(!appData.events) appData.events = [];
   if(!appData.bgPhoto) appData.bgPhoto = null;
@@ -239,29 +239,29 @@
     try {
       const d = new Date(solarDate + 'T00:00:00');
       const parts = LUNAR_FORMAT.formatToParts(d);
-      let y = '', m = '', day = '';
+      let m = '', day = '';
       parts.forEach(p => {
-        if (p.type === 'year') y = p.value;
         if (p.type === 'month') m = p.value;
         if (p.type === 'day') day = p.value;
       });
-      const mIdx = parseInt(m) - 1;
-      const dIdx = parseInt(day) - 1;
-      return `${y}年${LUNAR_MONTHS[mIdx]}${LUNAR_DAYS[dIdx]}`;
+      const mIdx = parseInt(m, 10) - 1;
+      const dIdx = parseInt(day, 10) - 1;
+      if (mIdx >= 0 && mIdx < 12 && dIdx >= 0 && dIdx < 30) {
+        return `${LUNAR_MONTHS[mIdx]}${LUNAR_DAYS[dIdx]}`;
+      }
+      return '农历转换失败';
     } catch (e) {
       return '农历转换失败';
     }
   }
 
   function lunarToSolar(lunarYear, lunarMonth, lunarDay) {
-    // 从农历新年开始，遍历365天寻找匹配
     const startDate = new Date(lunarYear, 0, 1);
+    const targetLunar = `${LUNAR_MONTHS[lunarMonth-1]}${LUNAR_DAYS[lunarDay-1]}`;
     for (let i = 0; i < 400; i++) {
       const d = new Date(startDate.getTime() + i * 86400000);
       const lunarStr = solarToLunar(d.toISOString().split('T')[0]);
-      // 比较年月日
-      const matchStr = `${lunarYear}年${LUNAR_MONTHS[lunarMonth-1]}${LUNAR_DAYS[lunarDay-1]}`;
-      if (lunarStr === matchStr) {
+      if (lunarStr === targetLunar) {
         return d.toISOString().split('T')[0];
       }
     }
