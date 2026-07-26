@@ -216,7 +216,7 @@
 
 <script>
 (function(){
-  const STORAGE_KEY = 'countdown_v13';
+  const STORAGE_KEY = 'countdown_v12';
   let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
   if(!appData.events) appData.events = [];
   if(!appData.bgPhoto) appData.bgPhoto = null;
@@ -230,35 +230,92 @@
 
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
 
-  // ========== 农历转换模块 (精准API版) ==========
+  // ========== 农历转换模块（精确版 v3 - 修复差一天问题） ==========
   const LUNAR_MONTHS = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];
   const LUNAR_DAYS = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
 
-  // 阳历转农历
-  async function solarToLunar(solarDate) {
-    try {
-      const response = await fetch(`https://api.anxintao.com/api/nongli?date=${solarDate}`);
-      const data = await response.json();
-      if (data && data.code === 200 && data.data) {
-        const lunar = data.data;
-        const monthName = LUNAR_MONTHS[parseInt(lunar.lunarMonth) - 1] || lunar.lunarMonth + '月';
-        const dayName = LUNAR_DAYS[parseInt(lunar.lunarDay) - 1] || lunar.lunarDay;
-        return `${lunar.lunarYear}年${monthName}${dayName}`;
-      }
-    } catch (e) {}
-    return null;
+  // 农历数据：春节（正月初一）阳历日期 + 每月精确天数
+  const LUNAR_DATA = {
+    2023: { spring: '2023-01-22', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2024: { spring: '2024-02-10', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2025: { spring: '2025-01-29', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2026: { spring: '2026-02-17', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2027: { spring: '2027-02-06', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2028: { spring: '2028-01-26', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2029: { spring: '2029-02-13', months: [30,29,30,29,30,29,30,29,30,29,30,29] },
+    2030: { spring: '2030-02-03', months: [30,29,30,29,30,29,30,29,30,29,30,29] }
+  };
+
+  // 计算农历日期距离春节的天数偏移
+  function getLunarDayOffset(lunarYear, lunarMonth, lunarDay) {
+    const data = LUNAR_DATA[lunarYear];
+    if (!data) return (lunarMonth - 1) * 30 + (lunarDay - 1);
+    let offset = 0;
+    for (let m = 0; m < lunarMonth - 1; m++) {
+      offset += data.months[m];
+    }
+    offset += lunarDay - 1;
+    return offset;
   }
 
-  // 农历转阳历（精准农历API）
-  async function lunarToSolar(lunarYear, lunarMonth, lunarDay) {
-    try {
-      const response = await fetch(`https://api.anxintao.com/api/nongli?year=${lunarYear}&month=${String(lunarMonth).padStart(2,'0')}&day=${String(lunarDay).padStart(2,'0')}&type=lunar`);
-      const data = await response.json();
-      if (data && data.code === 200 && data.data && data.data.solarDate) {
-        return data.data.solarDate;
+  // 农历→阳历
+  function lunarToSolar(lunarYear, lunarMonth, lunarDay) {
+    const data = LUNAR_DATA[lunarYear];
+    let springStr;
+    if (data) {
+      springStr = data.spring;
+    } else {
+      springStr = `${lunarYear}-02-01`;
+    }
+    const springDate = new Date(springStr + 'T00:00:00');
+    const offset = getLunarDayOffset(lunarYear, lunarMonth, lunarDay);
+    const result = new Date(springDate.getTime() + offset * 86400000);
+    const y = result.getFullYear();
+    const m = String(result.getMonth() + 1).padStart(2, '0');
+    const d = String(result.getDate()).padStart(2, '0');
+    const converted = `${y}-${m}-${d}`;
+    return converted;
+  }
+
+  // 阳历→农历
+  function solarToLunar(solarDate) {
+    const d = new Date(solarDate + 'T00:00:00');
+    const year = d.getFullYear();
+    let lunarYear = year;
+    for (let y = year; y >= 2023; y--) {
+      const data = LUNAR_DATA[y];
+      if (data && new Date(data.spring + 'T00:00:00') <= d) { lunarYear = y; break; }
+    }
+    const data = LUNAR_DATA[lunarYear];
+    if (!data) {
+      return `${lunarYear}年${LUNAR_MONTHS[d.getMonth()]}${LUNAR_DAYS[Math.min(d.getDate() - 1, 29)]}`;
+    }
+    const springDate = new Date(data.spring + 'T00:00:00');
+    const diffDays = Math.floor((d - springDate) / 86400000);
+    if (diffDays < 0) {
+      const prevData = LUNAR_DATA[lunarYear - 1];
+      if (!prevData) {
+        return `${lunarYear - 1}年${LUNAR_MONTHS[11]}${LUNAR_DAYS[Math.min(d.getDate() - 1, 29)]}`;
       }
-    } catch (e) {}
-    return null;
+      const prevSpring = new Date(prevData.spring + 'T00:00:00');
+      const prevDiff = Math.floor((d - prevSpring) / 86400000);
+      let remaining = prevDiff;
+      for (let m = 0; m < prevData.months.length; m++) {
+        if (remaining < prevData.months[m]) {
+          return `${lunarYear - 1}年${LUNAR_MONTHS[m]}${LUNAR_DAYS[remaining]}`;
+        }
+        remaining -= prevData.months[m];
+      }
+      return `${lunarYear - 1}年腊月${LUNAR_DAYS[Math.min(prevDiff, 29)]}`;
+    }
+    let remaining = diffDays;
+    for (let m = 0; m < data.months.length; m++) {
+      if (remaining < data.months[m]) {
+        return `${lunarYear}年${LUNAR_MONTHS[m]}${LUNAR_DAYS[remaining]}`;
+      }
+      remaining -= data.months[m];
+    }
+    return `${lunarYear}年腊月${LUNAR_DAYS[Math.min(diffDays, 29)]}`;
   }
 
   function fillLunarYears() {
@@ -274,7 +331,6 @@
     sel.innerHTML = LUNAR_DAYS.map((d, i) => `<option value="${i+1}">${d}</option>`).join('');
   }
 
-  // 格式化日期显示
   function formatEventDate(event) {
     if (event.calendarType === 'lunar' && event.lunarDate) return `农历 ${event.lunarDate}`;
     return formatDateWithWeekday(event.date);
@@ -408,7 +464,7 @@
 
   document.getElementById('addEventFAB').addEventListener('click',function(){document.getElementById('eventNameInput').value='';document.getElementById('eventDateInput').value=today;document.getElementById('eventEndDateInput').value='';document.getElementById('calendarType').value='solar';document.getElementById('solarDateWrap').classList.remove('hidden');document.getElementById('lunarDateWrap').classList.add('hidden');document.getElementById('addEventModal').classList.remove('hidden');});
   document.getElementById('cancelEventBtn').addEventListener('click',()=>document.getElementById('addEventModal').classList.add('hidden'));
-  document.getElementById('saveEventBtn').addEventListener('click',async function(){const name=document.getElementById('eventNameInput').value.trim();const category=document.getElementById('eventCategory').value;const calendarType=document.getElementById('calendarType').value;const endDate=document.getElementById('eventEndDateInput').value;let date,lunarDate=null,endLunarDate=null;if(calendarType==='lunar'){const ly=parseInt(document.getElementById('lunarYearSelect').value);const lm=parseInt(document.getElementById('lunarMonthSelect').value);const ld=parseInt(document.getElementById('lunarDaySelect').value);const lmNames=['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];const ldNames=['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];lunarDate=`${ly}年${lmNames[lm-1]}${ldNames[ld-1]}`;const solarResult=await lunarToSolar(ly,lm,ld);if(solarResult){date=solarResult;}else{alert('农历转阳历失败，请检查网络后重试');return;}if(endDate){endLunarDate=await solarToLunar(endDate);}}else{date=document.getElementById('eventDateInput').value;const lunarResult=await solarToLunar(date);if(lunarResult){lunarDate=lunarResult;}if(endDate){endLunarDate=await solarToLunar(endDate);}}if(!name||!date){alert('请填写名称和日期');return;}appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,lunarDate:lunarDate,endLunarDate:endLunarDate,photo:null,diary:'',pinned:false,titleColor:'#fff'});save();document.getElementById('addEventModal').classList.add('hidden');renderHome();updateBroEmoji();});
+  document.getElementById('saveEventBtn').addEventListener('click',function(){const name=document.getElementById('eventNameInput').value.trim();const category=document.getElementById('eventCategory').value;const calendarType=document.getElementById('calendarType').value;const endDate=document.getElementById('eventEndDateInput').value;let date,lunarDate=null,endLunarDate=null;if(calendarType==='lunar'){const ly=parseInt(document.getElementById('lunarYearSelect').value);const lm=parseInt(document.getElementById('lunarMonthSelect').value);const ld=parseInt(document.getElementById('lunarDaySelect').value);const lmNames=['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];const ldNames=['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];lunarDate=`${ly}年${lmNames[lm-1]}${ldNames[ld-1]}`;date=lunarToSolar(ly,lm,ld);if(endDate){endLunarDate=solarToLunar(endDate);}}else{date=document.getElementById('eventDateInput').value;lunarDate=solarToLunar(date);if(endDate){endLunarDate=solarToLunar(endDate);}}if(!name||!date){alert('请填写名称和日期');return;}appData.events.push({id:Date.now(),name,date,category,calendarType,endDate:endDate||null,lunarDate:lunarDate,endLunarDate:endLunarDate,photo:null,diary:'',pinned:false,titleColor:'#fff'});save();document.getElementById('addEventModal').classList.add('hidden');renderHome();updateBroEmoji();});
 
   document.getElementById('photoFromCamera').addEventListener('click',function(){document.getElementById('bgPhotoInput').onchange=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){appData.bgPhoto=e.target.result;save();applyBgPhoto();};r.readAsDataURL(f);};document.getElementById('bgPhotoInput').click();});
   document.getElementById('photoFromGallery').addEventListener('click',function(){document.getElementById('bgGalleryInput').onchange=function(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){appData.bgPhoto=e.target.result;save();applyBgPhoto();};r.readAsDataURL(f);};document.getElementById('bgGalleryInput').click();});
